@@ -2,6 +2,6 @@ package: main
 import:
 - package: code.cloudfoundry.org/lager
 - package: github.com/pivotal-cf/brokerapi
-- package: github.engineering.zhaw.ch/kaio/go-s3-ceph-broker
+- package: github.engineering.zhaw.ch/kaio/swift-go-broker
   subpackages:
   - broker
