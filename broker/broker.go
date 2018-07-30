@@ -7,6 +7,7 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
+//
 type Broker struct {
 	ProvisionDetails   brokerapi.ProvisionDetails
 	UpdateDetails      brokerapi.UpdateDetails
