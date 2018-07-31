@@ -1,0 +1,28 @@
+* 'radosgw-admin' can create users and handle authentication. Users are S3 and subusers mean Swift.
+* Buckets (S3)=containers (Swift).
+* All API calls to containers and objects are authenticated to a user(s).
+* Quotas can be set on a user and on the containers of a user. The maximum number of containers
+	per user can also be set.
+* There doesn't seem to be any quota control on a subuser level.
+* Users authenticated through Keystone will be automatically added to the ceph object gateway.
+* the 'Tenants' feature can be used as a namespace system to allow users and containers with 
+	matching names since they will be under different tenants.
+
+----------------------------------------------------------------------------------------------------
+					Potential solution
+----------------------------------------------------------------------------------------------------
+
+Tests will need to be conducted to ensure that a GW using Keystone authentication can handle
+manually added local users. Since users are already added to the GW, this is will most probably
+work, and so only a single GW will be needed. Otherwise another GW pointing to the same pool
+will be needed.
+
+After the GW issue is done, the rest should be simple. For each app that wants to use the service,
+a new user+subuser will be created on the GW, with a randomly generated tenant+name+container-name.
+Once a user is created, quotes will be set on both the container and user level to limit usage.
+
+The generated credentials can then be provided on bind/unbind or provision/deprovision, and since
+API calls are always authenticated (except for public containers) there is no worry about users
+affecting something not theirs.
+
+As for access, this will bypass OpenStack and users will interact directly with the GW.
