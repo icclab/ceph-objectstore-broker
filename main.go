@@ -10,6 +10,7 @@ import (
 	"github.com/ncw/swift"
 	"github.com/pivotal-cf/brokerapi"
 	"github.engineering.zhaw.ch/kaio/swift-go-broker/broker"
+	rg "github.engineering.zhaw.ch/kaio/swift-go-broker/radosgw"
 	"net/http"
 	"os"
 	"time"
@@ -30,7 +31,19 @@ func main() {
 
 	//Init broker
 	secrets := LoadSecrets()
-	broker := &broker.Broker{ServiceID: "1234-4321-abcd-fghi", PlanID: "4321-1234-abcd-fghi", Secrets: secrets}
+	rados := &rg.Radosgw{}
+	if err := rados.Connect(radosUrl, radosAdminPath, secrets["keyID"], secrets["secretKey"]); err != nil {
+		logger.Error("Failed to connect to radosgw", err)
+		return
+	}
+
+	broker := &broker.Broker{
+		ServiceID: "1234-4321-abcd-fghi",
+		PlanID:    "4321-1234-abcd-fghi",
+		Secrets:   secrets,
+		Logger:    logger,
+		Rados:     rados,
+	}
 	creds := brokerapi.BrokerCredentials{Username: secrets["adminUsername"], Password: secrets["adminPassword"]}
 
 	//Start the broker
@@ -39,9 +52,9 @@ func main() {
 	logger.Debug("Handling requests")
 
 	logger.Debug("Listen and serve on port: 8080")
-	_ = http.ListenAndServe(":8080", nil)
+	// _ = http.ListenAndServe(":8080", nil)
 
-	// StartTests(secrets)
+	StartTests(secrets)
 }
 
 func LoadSecrets() map[string]string {
@@ -62,7 +75,7 @@ func LoadSecrets() map[string]string {
 
 func StartTests(secrets map[string]string) {
 	userInfo := UserCreationTests(secrets)
-	time.Sleep(5 * time.Second)
+	// time.Sleep(5 * time.Second)
 	SwiftFunctionsTests(userInfo)
 	UserDeletionTests(userInfo, secrets)
 }
@@ -87,11 +100,15 @@ func UserCreationTests(secrets map[string]string) *rgw.UserInfoResponse {
 
 	//Create user
 	fmt.Println("Creating new user...")
-	userInfo, err := aa.UserCreate(context.Background(), &rgw.UserCreateRequest{UID: "new-user", DisplayName: "my-new-user"})
+	userInfo, err := aa.UserCreate(context.Background(), &rgw.UserCreateRequest{UID: "new-user", DisplayName: "my-new-user", Tenant: "a"})
 	if err != nil {
 		fmt.Println("User creation error!\n\n", err)
 	} else {
 		fmt.Println("User created!")
+
+		fmt.Println(userInfo.UserID)
+		userInfo.UserID = "a$" + userInfo.UserID
+		fmt.Println(userInfo.UserID)
 	}
 
 	//Create subuser
@@ -102,6 +119,16 @@ func UserCreationTests(secrets map[string]string) *rgw.UserInfoResponse {
 	} else {
 		fmt.Println("Subuser created!")
 	}
+
+	_, err = aa.SubUserCreate(context.Background(), &rgw.SubUserCreateModifyRequest{UID: userInfo.UserID, SubUser: "my-subuser2", Access: "readwrite"})
+	gen := true
+	time.Sleep(time.Second * 5)
+	fmt.Println(aa.KeyCreate(context.Background(), &rgw.KeyCreateRequest{UID: "a$new-user", GenerateKey: &gen}))
+	fmt.Println("WAITING")
+	time.Sleep(time.Second * 5)
+	aa.KeyCreate(context.Background(), &rgw.KeyCreateRequest{UID: "a$new-user", SubUser: "my-subuser", GenerateKey: &gen})
+	fmt.Println("WAITING2")
+	time.Sleep(time.Second * 5)
 
 	//Set user quota
 	fmt.Println("\nUpdating user quota...")
@@ -226,7 +253,8 @@ func UserDeletionTests(userInfo *rgw.UserInfoResponse, secrets map[string]string
 
 	//Delete user
 	fmt.Println("Deleting user...")
-	err = aa.UserRm(context.Background(), userInfo.UserID, true)
+	fmt.Println(userInfo.UserID)
+	err = aa.UserRm(context.Background(), "a$"+userInfo.UserID, true)
 	if err != nil {
 		fmt.Println("ERR:", err)
 	} else {
