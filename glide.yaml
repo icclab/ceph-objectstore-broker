@@ -1,7 +1,7 @@
-package: main
+package: github.engineering.zhaw.ch/kaio/swift-go-broker
 import:
 - package: code.cloudfoundry.org/lager
+- package: github.com/myENA/radosgwadmin
+- package: github.com/myENA/restclient
+- package: github.com/ncw/swift
 - package: github.com/pivotal-cf/brokerapi
-- package: github.engineering.zhaw.ch/kaio/swift-go-broker
-  subpackages:
-  - broker

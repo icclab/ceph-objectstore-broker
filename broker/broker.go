@@ -3,11 +3,9 @@ package broker
 import (
 	"context"
 	"errors"
-
 	"github.com/pivotal-cf/brokerapi"
 )
 
-//
 type Broker struct {
 	ProvisionDetails   brokerapi.ProvisionDetails
 	UpdateDetails      brokerapi.UpdateDetails
@@ -52,6 +50,8 @@ type Broker struct {
 
 	ServiceID string
 	PlanID    string
+
+	Secrets map[string]string
 }
 type AsyncServiceBroker struct {
 	Broker
@@ -60,6 +60,13 @@ type AsyncServiceBroker struct {
 
 type AsyncOnlyServiceBroker struct {
 	Broker
+}
+
+type Credentials struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
@@ -76,74 +83,28 @@ func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error)
 	return []brokerapi.Service{
 		{
 			ID:            broker.ServiceID,
-			Name:          "Swift",
-			Description:   "Swift service testing something",
+			Name:          "Swift Object Store",
+			Description:   "Swift service based on a Ceph backend.",
 			Bindable:      true,
 			PlanUpdatable: true,
 			Plans: []brokerapi.ServicePlan{
 				{
 					ID:          broker.PlanID,
-					Name:        "Standard",
-					Description: "The default plan",
+					Name:        "100MB",
+					Description: "100MB object storage",
 					Metadata: &brokerapi.ServicePlanMetadata{
-						DisplayName: "Plan for average user",
-						Bullets:     []string{},
-						Costs: []brokerapi.ServicePlanCost{
-							{Unit: "All", Amount: map[string]float64{"CHF": 0}},
-						},
-					},
-					Schemas: &brokerapi.ServiceSchemas{
-						Instance: brokerapi.ServiceInstanceSchema{
-							Create: brokerapi.Schema{
-								Parameters: map[string]interface{}{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"type":    "object",
-									"properties": map[string]interface{}{
-										"billing-account": map[string]interface{}{
-											"description": "Billing account number used to charge use of shared fake server.",
-											"type":        "string",
-										},
-									},
-								},
-							},
-							Update: brokerapi.Schema{
-								Parameters: map[string]interface{}{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"type":    "object",
-									"properties": map[string]interface{}{
-										"billing-account": map[string]interface{}{
-											"description": "Billing account number used to charge use of shared fake server.",
-											"type":        "string",
-										},
-									},
-								},
-							},
-						},
-						Binding: brokerapi.ServiceBindingSchema{
-							Create: brokerapi.Schema{
-								Parameters: map[string]interface{}{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"type":    "object",
-									"properties": map[string]interface{}{
-										"billing-account": map[string]interface{}{
-											"description": "Billing account number used to charge use of shared fake server.",
-											"type":        "string",
-										},
-									},
-								},
-							},
-						},
+						DisplayName: "100MB",
 					},
 				},
 			},
 			Metadata: &brokerapi.ServiceMetadata{
-				DisplayName:         "Swift",
+				DisplayName:         "Swift Object Store",
 				ProviderDisplayName: "ZHAW",
-				LongDescription:     "Some long description",
+				LongDescription:     "Swift service based on a Ceph backend",
 				DocumentationUrl:    "http://thedocs.com",
 				SupportUrl:          "http://helpme.no",
 			},
-			Tags: []string{"ZHAW", "Swift"},
+			Tags: []string{"Swift"},
 		},
 	}, nil
 }
@@ -356,13 +317,6 @@ func (broker *Broker) LastOperation(context context.Context, instanceID, operati
 	}
 
 	return brokerapi.LastOperation{State: broker.LastOperationState, Description: broker.LastOperationDescription}, nil
-}
-
-type Credentials struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
 }
 
 func sliceContains(needle string, haystack []string) bool {
