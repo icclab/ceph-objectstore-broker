@@ -3,7 +3,13 @@ package broker
 import (
 	"errors"
 	"github.com/pivotal-cf/brokerapi"
+	"strconv"
+	"strings"
 )
+
+func createTenantID(instanceID string) string {
+	return strings.Replace(instanceID, "-", "", -1)
+}
 
 func sliceContains(needle string, haystack []string) bool {
 	for _, element := range haystack {
@@ -50,5 +56,10 @@ func getPlanQuota(planID string, plans []brokerapi.ServicePlan) (int, error) {
 		return -1, err
 	}
 
-	return p.Metadata.AdditionalMetadata["quotaMB"].(int), nil
+	i, err := strconv.Atoi(p.Metadata.AdditionalMetadata["quotaMB"].(string))
+	if err != nil {
+		return -1, err
+	}
+
+	return i, nil
 }

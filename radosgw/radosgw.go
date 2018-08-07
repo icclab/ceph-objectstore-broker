@@ -55,7 +55,7 @@ func (rg *Radosgw) GetUser(name string, tenant string, getStats bool) (*rgw.User
 }
 
 func (rg *Radosgw) SetUserQuota(name string, tenant string, sizeMB int) error {
-	err := rg.conn.QuotaSet(context.Background(), &rgw.QuotaSetRequest{UID: tenant + "$" + name, QuotaType: "user", MaximumSizeKb: sizeMB * 1000, Enabled: true})
+	err := rg.conn.QuotaSet(context.Background(), &rgw.QuotaSetRequest{UID: tenant + "$" + name, QuotaType: "user", MaximumSizeKb: sizeMB * 1024, Enabled: true})
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (rg *Radosgw) GetUserUsageMB(name string, tenant string) (int, error) {
 		return -1, err
 	}
 
-	return userInfo.Stats.SizeKB / 1000, nil
+	return userInfo.Stats.SizeKB / 1024, nil
 }
 
 func (rg *Radosgw) DeleteUser(name string, tenant string) error {

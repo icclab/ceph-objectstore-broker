@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"github.com/pivotal-cf/brokerapi"
+	"github.engineering.zhaw.ch/kaio/swift-go-broker/config"
 	"github.engineering.zhaw.ch/kaio/swift-go-broker/radosgw"
 )
 
@@ -67,22 +68,8 @@ type Broker struct {
 	Rados         *radosgw.Radosgw
 	Logger        lager.Logger
 	ServiceConfig []brokerapi.Service
-	BrokerConfig  *BrokerConfig
-	binds         map[string]Bind
-}
-
-type BrokerConfig struct {
-	RadosKeyID     string
-	RadosSecretKey string
-	RadosAdminPath string
-	RadosEndpoint  string
-
-	S3Endpoint    string
-	SwiftEndpoint string
-
-	BrokerUsername string
-	BrokerPassword string
-	InstanceLimit  int
+	BrokerConfig  *config.BrokerConfig
+	Binds         map[string]Bind
 }
 
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
@@ -116,7 +103,7 @@ func (broker *Broker) Provision(context context.Context, instanceID string, deta
 	}
 
 	//Provision
-	if err := broker.Rados.CreateUser(instanceID, instanceID, instanceID); err != nil {
+	if err := broker.Rados.CreateUser(instanceID, instanceID, createTenantID(instanceID)); err != nil {
 		broker.Logger.Error("Provision failed. Couldn't create user", err)
 		broker.LastOperationError = err
 		return brokerapi.ProvisionedServiceSpec{}, err
@@ -129,7 +116,7 @@ func (broker *Broker) Provision(context context.Context, instanceID string, deta
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
-	if err := broker.Rados.SetUserQuota(instanceID, instanceID, quota); err != nil {
+	if err := broker.Rados.SetUserQuota(instanceID, createTenantID(instanceID), quota); err != nil {
 		broker.Logger.Error("Provision failed. Couldn't set user quota", err)
 		broker.LastOperationError = err
 		return brokerapi.ProvisionedServiceSpec{}, err
@@ -159,7 +146,7 @@ func (broker *Broker) Update(context context.Context, instanceID string, details
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
-	usage, err := broker.Rados.GetUserUsageMB(instanceID, instanceID)
+	usage, err := broker.Rados.GetUserUsageMB(instanceID, createTenantID(instanceID))
 	if err != nil {
 		broker.Logger.Error("Update failed. couldn't get user usage", err)
 		broker.LastOperationError = err
@@ -173,7 +160,7 @@ func (broker *Broker) Update(context context.Context, instanceID string, details
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
-	if err := broker.Rados.SetUserQuota(instanceID, instanceID, newPlanQuota); err != nil {
+	if err := broker.Rados.SetUserQuota(instanceID, createTenantID(instanceID), newPlanQuota); err != nil {
 		broker.Logger.Error("Update failed. Couldn't update quota for the new plan", err)
 		broker.LastOperationError = err
 		return brokerapi.UpdateServiceSpec{}, err
@@ -203,7 +190,7 @@ func (broker *Broker) Deprovision(context context.Context, instanceID string, de
 	}
 
 	//Deprovision
-	if err := broker.Rados.DeleteUser(instanceID, instanceID); err != nil {
+	if err := broker.Rados.DeleteUser(instanceID, createTenantID(instanceID)); err != nil {
 		broker.Logger.Error("Deprovision failed. Couldn't delete user", err)
 		broker.LastOperationError = err
 		return brokerapi.DeprovisionServiceSpec{}, err
@@ -225,9 +212,8 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 		return brokerapi.Binding{}, broker.BindError
 	}
 
-	user := instanceID + "$" + instanceID
 	//S3 info
-	s3Key, err := broker.Rados.CreateS3Key(user, instanceID)
+	s3Key, err := broker.Rados.CreateS3Key(instanceID, createTenantID(instanceID))
 	if err != nil {
 		broker.Logger.Error("Bind failed. Couldn't create s3 key", err)
 		broker.LastOperationError = err
@@ -235,14 +221,14 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	}
 
 	//Swift info
-	_, err = broker.Rados.CreateSubuser(instanceID, bindingID, instanceID)
+	_, err = broker.Rados.CreateSubuser(instanceID, bindingID, createTenantID(instanceID))
 	if err != nil {
 		broker.Logger.Error("Bind failed. Couldn't create swift key (subuser)", err)
 		broker.LastOperationError = err
 		return brokerapi.Binding{}, err
 	}
 
-	userInfo, err := broker.Rados.GetUser(instanceID, instanceID, false)
+	userInfo, err := broker.Rados.GetUser(instanceID, createTenantID(instanceID), false)
 	if err != nil {
 		broker.Logger.Error("Bind failed. Couldn't get user information (to get swift key)", err)
 		broker.LastOperationError = err
@@ -250,6 +236,7 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	}
 
 	//Fill info
+	user := createTenantID(instanceID) + "$" + instanceID
 	creds := bindCreds{
 		S3User:         user,
 		S3AccessKey:    s3Key.AccessKey,
@@ -261,10 +248,11 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	}
 
 	//Add to list of binds
-	broker.binds[bindingID] = Bind{
+
+	broker.Binds[bindingID] = Bind{
 		User:        instanceID,
 		Subuser:     bindingID,
-		Tenant:      instanceID,
+		Tenant:      createTenantID(instanceID),
 		S3AccessKey: creds.S3AccessKey,
 		SwiftKey:    creds.SwiftSecretKey,
 	}
@@ -299,7 +287,7 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 	}
 
 	//Delete bind resources
-	bind := broker.binds[bindingID]
+	bind := broker.Binds[bindingID]
 	if err := broker.Rados.DeleteS3Key(bind.User, bind.Tenant, bind.S3AccessKey); err != nil {
 		broker.Logger.Error("Unbind failed. Couldn't delete S3 key", err)
 		broker.LastOperationError = err
@@ -311,7 +299,7 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 		broker.LastOperationError = err
 		return err
 	}
-	delete(broker.binds, bindingID)
+	delete(broker.Binds, bindingID)
 	removeFromSlice(bindingID, broker.BoundBindingIDs)
 
 	broker.UnbindingDetails = details
