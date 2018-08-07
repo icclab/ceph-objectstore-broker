@@ -57,7 +57,7 @@ func main() {
 	logger.Debug("Handling requests")
 
 	logger.Debug("Listen and serve on port: 8080")
-	// _ = http.ListenAndServe(":8080", nil)
+	_ = http.ListenAndServe(":8080", nil)
 }
 
 func loadConfig(path string, i interface{}) error {
