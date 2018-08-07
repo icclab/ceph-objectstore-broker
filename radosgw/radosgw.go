@@ -63,6 +63,15 @@ func (rg *Radosgw) SetUserQuota(name string, tenant string, sizeMB int) error {
 	return nil
 }
 
+func (rg *Radosgw) GetUserQuotaMB(name string, tenant string) (int, error) {
+	q, err := rg.conn.QuotaUser(context.Background(), tenant+"$"+name)
+	if err != nil {
+		return -1, err
+	}
+
+	return (int)(q.MaxSizeKb / 1024), nil
+}
+
 func (rg *Radosgw) GetUserUsageMB(name string, tenant string) (int, error) {
 	userInfo, err := rg.GetUser(name, tenant, true)
 	if err != nil {
