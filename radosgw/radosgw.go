@@ -15,7 +15,7 @@ type Radosgw struct {
 
 func (rg *Radosgw) Connect(radosUrl string, radosAdminPath string, keyID string, secretKey string) error {
 	rg.keyID = keyID
-	rg.secretKey = keyID
+	rg.secretKey = secretKey
 
 	cfg := &rgw.Config{
 		ClientConfig: rcl.ClientConfig{
@@ -45,13 +45,31 @@ func (rg *Radosgw) CreateUser(name string, dispName string, tenant string) error
 	return nil
 }
 
-func (rg *Radosgw) GetUser(name string, tenant string) (*rgw.UserInfoResponse, error) {
-	userInfo, err := rg.conn.UserInfo(context.Background(), tenant+"$"+name, false)
+func (rg *Radosgw) GetUser(name string, tenant string, getStats bool) (*rgw.UserInfoResponse, error) {
+	userInfo, err := rg.conn.UserInfo(context.Background(), tenant+"$"+name, getStats)
 	if err != nil {
 		return nil, err
 	}
 
 	return userInfo, nil
+}
+
+func (rg *Radosgw) SetUserQuota(name string, tenant string, sizeMB int) error {
+	err := rg.conn.QuotaSet(context.Background(), &rgw.QuotaSetRequest{UID: tenant + "$" + name, QuotaType: "user", MaximumSizeKb: sizeMB * 1000, Enabled: true})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rg *Radosgw) GetUserUsageMB(name string, tenant string) (int, error) {
+	userInfo, err := rg.GetUser(name, tenant, true)
+	if err != nil {
+		return -1, err
+	}
+
+	return userInfo.Stats.SizeKB / 1000, nil
 }
 
 func (rg *Radosgw) DeleteUser(name string, tenant string) error {
