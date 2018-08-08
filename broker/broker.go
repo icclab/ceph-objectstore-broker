@@ -35,6 +35,7 @@ type Broker struct {
 
 	ProvisionedInstanceIDs []string
 
+	BoundInstanceIDs    []string
 	BoundBindingIDs     []string
 	BoundBindingDetails brokerapi.BindDetails
 	SyslogDrainURL      string
@@ -69,7 +70,8 @@ type Broker struct {
 	Logger        lager.Logger
 	ServiceConfig []brokerapi.Service
 	BrokerConfig  *config.BrokerConfig
-	Binds         map[string]Bind
+	//Maps a bindID to a bind struct
+	Binds map[string]Bind
 }
 
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
@@ -138,6 +140,18 @@ func (broker *Broker) Update(context context.Context, instanceID string, details
 		return brokerapi.UpdateServiceSpec{}, broker.UpdateError
 	}
 
+	if _, err := getPlan(details.PlanID, broker.ServiceConfig[0].Plans); err != nil {
+		broker.Logger.Error("Update failed. Requested plan does not exist", brokerapi.ErrPlanChangeNotSupported)
+		broker.LastOperationError = brokerapi.ErrPlanChangeNotSupported
+		return brokerapi.UpdateServiceSpec{}, brokerapi.ErrPlanChangeNotSupported
+	}
+
+	if details.PlanID == details.PreviousValues.PlanID {
+		broker.Logger.Info("Requested plan same as current plan")
+		broker.LastOperationError = nil
+		return brokerapi.UpdateServiceSpec{}, nil
+	}
+
 	//Update
 	newPlanQuota, err := getPlanQuota(details.PlanID, broker.ServiceConfig[0].Plans)
 	if err != nil {
@@ -196,7 +210,7 @@ func (broker *Broker) Deprovision(context context.Context, instanceID string, de
 		return brokerapi.DeprovisionServiceSpec{}, err
 	}
 
-	removeFromSlice(instanceID, broker.ProvisionedInstanceIDs)
+	broker.ProvisionedInstanceIDs = removeFromSlice(instanceID, broker.ProvisionedInstanceIDs)
 	broker.DeprovisionDetails = details
 	broker.LastOperationError = nil
 
@@ -210,6 +224,18 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 		broker.Logger.Error("Bind failed", broker.BindError)
 		broker.LastOperationError = broker.BindError
 		return brokerapi.Binding{}, broker.BindError
+	}
+
+	if !sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
+		broker.Logger.Error("Bind failed. Instance does not exist", brokerapi.ErrInstanceDoesNotExist)
+		broker.LastOperationError = brokerapi.ErrInstanceDoesNotExist
+		return brokerapi.Binding{}, brokerapi.ErrInstanceDoesNotExist
+	}
+
+	if sliceContains(instanceID, broker.BoundInstanceIDs) && sliceContains(bindingID, broker.BoundBindingIDs) {
+		broker.Logger.Error("Bind failed. Already bound to this instance", brokerapi.ErrBindingAlreadyExists)
+		broker.LastOperationError = brokerapi.ErrBindingAlreadyExists
+		return brokerapi.Binding{}, brokerapi.ErrBindingAlreadyExists
 	}
 
 	//S3 info
@@ -259,6 +285,7 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 
 	broker.BoundBindingDetails = details
 	broker.BoundBindingIDs = append(broker.BoundBindingIDs, bindingID)
+	broker.BoundInstanceIDs = append(broker.BoundInstanceIDs, instanceID)
 	broker.LastOperationError = nil
 
 	return brokerapi.Binding{Credentials: creds}, nil
@@ -276,7 +303,7 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 
 	if !sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
 		broker.Logger.Error("Unbind failed. Instance not found", brokerapi.ErrInstanceDoesNotExist)
-		broker.LastOperationError = brokerapi.ErrInstanceDoesNotExist
+		broker.LastOperationError = brokerapi.ErrBindingDoesNotExist
 		return brokerapi.ErrInstanceDoesNotExist
 	}
 
@@ -300,12 +327,13 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 		return err
 	}
 	delete(broker.Binds, bindingID)
-	removeFromSlice(bindingID, broker.BoundBindingIDs)
+	broker.BoundBindingIDs = removeFromSlice(bindingID, broker.BoundBindingIDs)
+	broker.BoundInstanceIDs = removeFromSlice(instanceID, broker.BoundInstanceIDs)
 
 	broker.UnbindingDetails = details
 	broker.LastOperationError = nil
 
-	return brokerapi.ErrInstanceDoesNotExist
+	return nil
 }
 
 func (broker *Broker) LastOperation(context context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {

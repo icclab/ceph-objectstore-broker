@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func CheckErrs(t *testing.T, args []interface{}, fatal bool, errors ...error) func(t *testing.T) {
+func CheckErrs(t *testing.T, args []interface{}, errors ...error) func(t *testing.T) {
 	return func(t *testing.T) {
 		//Get non-nil errors
 		var failed []error
@@ -18,11 +18,7 @@ func CheckErrs(t *testing.T, args []interface{}, fatal bool, errors ...error) fu
 		}
 
 		if gotError {
-			if fatal {
-				t.Fatal(args, failed)
-			} else {
-				t.Error(args, failed)
-			}
+			t.Error(args, failed)
 		}
 	}
 }
@@ -30,6 +26,13 @@ func CheckErrs(t *testing.T, args []interface{}, fatal bool, errors ...error) fu
 func Equals(expected interface{}, actual interface{}, msg string) error {
 	if expected != actual {
 		return fmt.Errorf("%s. Expected: '%+v', got: '%+v'", msg, expected, actual)
+	}
+	return nil
+}
+
+func Atleast(min float64, actual float64, msg string) error {
+	if min > actual {
+		return fmt.Errorf("%s. Expected at least: '%+v', got: '%+v'", msg, min, actual)
 	}
 	return nil
 }
