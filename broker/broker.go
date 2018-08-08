@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/swift-go-broker/config"
-	"github.engineering.zhaw.ch/kaio/swift-go-broker/radosgw"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
 )
 
 type Bind struct {

@@ -6,9 +6,9 @@ import (
 	rgw "github.com/myENA/radosgwadmin"
 	"github.com/ncw/swift"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/swift-go-broker/broker"
-	"github.engineering.zhaw.ch/kaio/swift-go-broker/config"
-	rg "github.engineering.zhaw.ch/kaio/swift-go-broker/radosgw"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/broker"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	rg "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
 	"net/http"
 	"os"
 )

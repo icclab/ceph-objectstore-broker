@@ -1,8 +1,8 @@
 package radosgw
 
 import (
-	"github.engineering.zhaw.ch/kaio/swift-go-broker/config"
-	. "github.engineering.zhaw.ch/kaio/swift-go-broker/testutils"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/testutils"
 	"strconv"
 	"testing"
 )
