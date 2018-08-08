@@ -37,7 +37,7 @@ func main() {
 
 	//Connect to rgw
 	rados := &rg.Radosgw{}
-	if err := rados.Connect(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosKeyID, bc.RadosSecretKey); err != nil {
+	if err := rados.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosKeyID, bc.RadosSecretKey); err != nil {
 		logger.Error("Failed to connect to radosgw", err)
 		return
 	}

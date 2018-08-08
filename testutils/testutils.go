@@ -1,40 +1,23 @@
 package testutils
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 )
 
-func Check(pass bool, msg string) error {
-	if !pass {
-		return errors.New(msg)
-	}
-	return nil
-}
-
-func CheckErr(t *testing.T, e error, fatal bool, args ...interface{}) func(t *testing.T) {
+func CheckErrs(t *testing.T, args []interface{}, fatal bool, errors ...error) func(t *testing.T) {
 	return func(t *testing.T) {
-		if e != nil {
-			if fatal {
-				t.Fatal(args, e)
-			} else {
-				t.Error(args, e)
-			}
-		}
-	}
-}
-
-func CheckErrs(t *testing.T, e []error, fatal bool, args ...interface{}) func(t *testing.T) {
-	return func(t *testing.T) {
-
+		//Get non-nil errors
 		var failed []error
-		for _, err := range e {
+		gotError := false
+		for _, err := range errors {
 			if err != nil {
 				failed = append(failed, err)
+				gotError = true
 			}
 		}
 
-		if len(failed) != 0 {
+		if gotError {
 			if fatal {
 				t.Fatal(args, failed)
 			} else {
@@ -42,4 +25,11 @@ func CheckErrs(t *testing.T, e []error, fatal bool, args ...interface{}) func(t 
 			}
 		}
 	}
+}
+
+func Equals(expected interface{}, actual interface{}, msg string) error {
+	if expected != actual {
+		return fmt.Errorf("%s. Expected: '%+v', got: '%+v'", msg, expected, actual)
+	}
+	return nil
 }

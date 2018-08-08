@@ -13,7 +13,7 @@ type Radosgw struct {
 	secretKey string
 }
 
-func (rg *Radosgw) Connect(radosUrl string, radosAdminPath string, keyID string, secretKey string) error {
+func (rg *Radosgw) Setup(radosUrl string, radosAdminPath string, keyID string, secretKey string) error {
 	rg.keyID = keyID
 	rg.secretKey = secretKey
 
