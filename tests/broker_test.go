@@ -1,4 +1,4 @@
-package broker
+package tests
 
 import (
 	"encoding/json"
@@ -6,9 +6,11 @@ import (
 	s3 "github.com/minio/minio-go"
 	"github.com/ncw/swift"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/broker"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	rgw "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
 	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/testutils"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 	"strconv"
 	"strings"
 	"testing"
@@ -26,18 +28,18 @@ type provisionBody struct {
 }
 
 type receivedBindCreds struct {
-	C bindCreds `json:"credentials"`
+	C broker.BindCreds `json:"credentials"`
 }
 
 func TestBroker(t *testing.T) {
 	//Load config
-	bc := config.BrokerConfig{}
-	if err := config.LoadConfig("../config/broker-config.json", &bc); err != nil {
+	bc := brokerConfig.BrokerConfig{}
+	if err := bc.Update(); err != nil {
 		t.Fatal("Failed to load broker config")
 	}
 
 	s := []brokerapi.Service{}
-	if err := config.LoadConfig("../config/service-config.json", &s); err != nil {
+	if err := utils.LoadJson("../brokerConfig/service-config.json", &s); err != nil {
 		t.Fatal("Failed to load service config")
 	}
 
@@ -99,7 +101,7 @@ func TestBroker(t *testing.T) {
 	t.Run("Test Swift Creds", CheckErrs(t, nil, sc.Authenticate()))
 
 	r := rgw.Radosgw{}
-	if r.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosKeyID, bc.RadosSecretKey) != nil {
+	if r.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosAccessKey, bc.RadosSecretKey) != nil {
 		t.Error("Failed to setup radosgw")
 	}
 

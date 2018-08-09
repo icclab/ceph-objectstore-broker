@@ -1,0 +1,15 @@
+---
+applications:
+- name: ceph-objectstore-broker
+  memory: 100M
+  instances: 1
+  env:
+    RADOS_ACCESS_KEY: ((rados_access_key))
+    RADOS_SECRET_KEY: ((rados_secret_key))
+    RADOS_ENDPOINT: ((rados_endpoint))
+    RADOS_ADMIN: ((rados_admin))
+    BROKER_USERNAME: ((broker_username))
+    BROKER_PASSWORD: ((broker_password))
+    S3_PATH: ((s3_path))
+    SWIFT_PATH: ((swift_path))
+    INSTANCE_LIMIT: ((instance_limit))

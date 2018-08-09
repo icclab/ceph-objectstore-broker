@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
 )
 
@@ -17,7 +17,7 @@ type Bind struct {
 	Tenant      string
 }
 
-type bindCreds struct {
+type BindCreds struct {
 	S3User      string `json:"s3User"`
 	S3AccessKey string `json:"s3AcessKey"`
 	S3SecretKey string `json:"s3SecretKey"`
@@ -69,14 +69,13 @@ type Broker struct {
 	Rados         *radosgw.Radosgw
 	Logger        lager.Logger
 	ServiceConfig []brokerapi.Service
-	BrokerConfig  *config.BrokerConfig
+	BrokerConfig  *brokerConfig.BrokerConfig
 	//Maps a bindID to a bind struct
 	Binds map[string]Bind
 }
 
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
 	broker.BrokerCalled = true
-
 	//All possible service-config can be found here: https://github.com/openservicebrokerapi/servicebroker/blob/master/spec.md#input-parameters-schema-object
 	broker.LastOperationError = nil
 	return broker.ServiceConfig, nil
@@ -263,7 +262,7 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 
 	//Fill info
 	user := createTenantID(instanceID) + "$" + instanceID
-	creds := bindCreds{
+	creds := BindCreds{
 		S3User:         user,
 		S3AccessKey:    s3Key.AccessKey,
 		S3SecretKey:    s3Key.SecretKey,

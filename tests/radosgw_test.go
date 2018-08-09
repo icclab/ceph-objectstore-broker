@@ -1,19 +1,20 @@
-package radosgw
+package tests
 
 import (
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/config"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
+	rgw "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
 	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/testutils"
 	"testing"
 )
 
 func TestRadosgw(t *testing.T) {
-	bc := config.BrokerConfig{}
-	if err := config.LoadConfig("../config/broker-config.json", &bc); err != nil {
+	bc := brokerConfig.BrokerConfig{}
+	if err := bc.Update(); err != nil {
 		t.Fatal("Could not load broker config", err)
 	}
 
-	rados := Radosgw{}
-	err := rados.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosKeyID, bc.RadosSecretKey)
+	rados := rgw.Radosgw{}
+	err := rados.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosAccessKey, bc.RadosSecretKey)
 	if !t.Run("Connect", CheckErrs(t, nil, err)) {
 		t.FailNow()
 	}

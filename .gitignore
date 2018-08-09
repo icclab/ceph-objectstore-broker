@@ -25,4 +25,5 @@ _testmain.go
 
 #Mine
 vendor/*
-config/*
+vars-file.yml
+.env
