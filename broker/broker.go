@@ -3,18 +3,21 @@ package broker
 import (
 	"code.cloudfoundry.org/lager"
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/pivotal-cf/brokerapi"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/s3"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 )
 
 type Bind struct {
-	S3AccessKey string
-	SwiftKey    string
-	User        string
-	Subuser     string
-	Tenant      string
+	S3AccessKey string `json:"s3AccessKey"`
+	SwiftKey    string `json:"swiftKey"`
+	User        string `json:"user"`
+	Subuser     string `json:"subuser"`
+	Tenant      string `json:"tenant"`
 }
 
 type BindCreds struct {
@@ -29,20 +32,11 @@ type BindCreds struct {
 }
 
 type Broker struct {
-	ProvisionDetails   brokerapi.ProvisionDetails
-	UpdateDetails      brokerapi.UpdateDetails
-	DeprovisionDetails brokerapi.DeprovisionDetails
-
-	ProvisionedInstanceIDs []string
-
-	BoundInstanceIDs    []string
-	BoundBindingIDs     []string
+	ProvisionDetails    brokerapi.ProvisionDetails
+	UpdateDetails       brokerapi.UpdateDetails
+	DeprovisionDetails  brokerapi.DeprovisionDetails
 	BoundBindingDetails brokerapi.BindDetails
-	SyslogDrainURL      string
-	RouteServiceURL     string
-	VolumeMounts        []brokerapi.VolumeMount
-
-	UnbindingDetails brokerapi.UnbindDetails
+	UnbindingDetails    brokerapi.UnbindDetails
 
 	ProvisionError     error
 	BindError          error
@@ -58,21 +52,21 @@ type Broker struct {
 	AsyncAllowed bool
 
 	ShouldReturnAsync     bool
-	DashboardURL          string
 	OperationDataToReturn string
 
 	LastOperationInstanceID string
 	LastOperationData       string
-
-	ReceivedContext bool
 
 	Rados         *radosgw.Radosgw
 	Logger        lager.Logger
 	ServiceConfig []brokerapi.Service
 	BrokerConfig  *brokerConfig.BrokerConfig
 	//Maps a bindID to a bind struct
-	Binds map[string]Bind
+	S3 *s3.S3
 }
+
+const BucketName = "ceph-objectstore-broker"
+const instancePrefix = "instances/"
 
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
 	broker.BrokerCalled = true
@@ -86,45 +80,43 @@ func (broker *Broker) Provision(context context.Context, instanceID string, deta
 
 	//Initial error checking
 	if broker.ProvisionError != nil {
-		broker.Logger.Error("Provision failed", broker.ProvisionError)
 		broker.LastOperationError = broker.ProvisionError
 		return brokerapi.ProvisionedServiceSpec{}, broker.ProvisionError
 	}
 
-	if len(broker.ProvisionedInstanceIDs) >= broker.BrokerConfig.InstanceLimit {
-		broker.Logger.Error("Provision failed. Max number of instances reached", brokerapi.ErrInstanceLimitMet)
+	if broker.provisionCount() >= broker.BrokerConfig.InstanceLimit {
 		broker.LastOperationError = brokerapi.ErrInstanceLimitMet
 		return brokerapi.ProvisionedServiceSpec{}, brokerapi.ErrInstanceLimitMet
 	}
 
-	if sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
-		broker.Logger.Error("Provision failed. Instance already exists", brokerapi.ErrInstanceAlreadyExists)
+	if broker.instanceExists(instanceID) {
 		broker.LastOperationError = brokerapi.ErrInstanceAlreadyExists
 		return brokerapi.ProvisionedServiceSpec{}, brokerapi.ErrInstanceAlreadyExists
 	}
 
 	//Provision
 	if err := broker.Rados.CreateUser(instanceID, instanceID, createTenantID(instanceID)); err != nil {
-		broker.Logger.Error("Provision failed. Couldn't create user", err)
 		broker.LastOperationError = err
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
-	quota, err := getPlanQuota(details.PlanID, broker.ServiceConfig[0].Plans)
+	quota, err := broker.getPlanQuota(details.PlanID)
 	if err != nil {
-		broker.Logger.Error("Provision failed. Couldn't get plan size quota", err)
 		broker.LastOperationError = err
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
 	if err := broker.Rados.SetUserQuota(instanceID, createTenantID(instanceID), quota); err != nil {
-		broker.Logger.Error("Provision failed. Couldn't set user quota", err)
 		broker.LastOperationError = err
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
+	if err := broker.S3.PutObject(BucketName, getInstanceObjName(instanceID), ""); err != nil {
+		return brokerapi.ProvisionedServiceSpec{}, err
+	}
+
 	broker.ProvisionDetails = details
-	broker.ProvisionedInstanceIDs = append(broker.ProvisionedInstanceIDs, instanceID)
+	broker.AsyncAllowed = asyncAllowed
 	broker.LastOperationError = nil
 
 	return brokerapi.ProvisionedServiceSpec{IsAsync: false}, nil
@@ -134,47 +126,40 @@ func (broker *Broker) Update(context context.Context, instanceID string, details
 	broker.BrokerCalled = true
 
 	if broker.UpdateError != nil {
-		broker.Logger.Error("Update failed", broker.ProvisionError)
 		broker.LastOperationError = broker.UpdateError
 		return brokerapi.UpdateServiceSpec{}, broker.UpdateError
 	}
 
-	if _, err := getPlan(details.PlanID, broker.ServiceConfig[0].Plans); err != nil {
-		broker.Logger.Error("Update failed. Requested plan does not exist", brokerapi.ErrPlanChangeNotSupported)
+	if _, err := broker.getPlan(details.PlanID); err != nil {
 		broker.LastOperationError = brokerapi.ErrPlanChangeNotSupported
 		return brokerapi.UpdateServiceSpec{}, brokerapi.ErrPlanChangeNotSupported
 	}
 
 	if details.PlanID == details.PreviousValues.PlanID {
-		broker.Logger.Info("Requested plan same as current plan")
 		broker.LastOperationError = nil
 		return brokerapi.UpdateServiceSpec{}, nil
 	}
 
 	//Update
-	newPlanQuota, err := getPlanQuota(details.PlanID, broker.ServiceConfig[0].Plans)
+	newPlanQuota, err := broker.getPlanQuota(details.PlanID)
 	if err != nil {
-		broker.Logger.Error("Update failed. couldn't get new plan quota", err)
 		broker.LastOperationError = err
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
 	usage, err := broker.Rados.GetUserUsageMB(instanceID, createTenantID(instanceID))
 	if err != nil {
-		broker.Logger.Error("Update failed. couldn't get user usage", err)
 		broker.LastOperationError = err
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
 	if usage >= newPlanQuota {
 		err = errors.New("Current object store usage exceeds size quota of the new plan")
-		broker.Logger.Error("Update failed. Must reduce usage first", err)
 		broker.LastOperationError = err
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
 	if err := broker.Rados.SetUserQuota(instanceID, createTenantID(instanceID), newPlanQuota); err != nil {
-		broker.Logger.Error("Update failed. Couldn't update quota for the new plan", err)
 		broker.LastOperationError = err
 		return brokerapi.UpdateServiceSpec{}, err
 	}
@@ -191,26 +176,35 @@ func (broker *Broker) Deprovision(context context.Context, instanceID string, de
 
 	//Error checking
 	if broker.DeprovisionError != nil {
-		broker.Logger.Error("Deprovision failed", broker.DeprovisionError)
 		broker.LastOperationError = broker.DeprovisionError
 		return brokerapi.DeprovisionServiceSpec{}, broker.DeprovisionError
 	}
 
-	if !sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
-		broker.Logger.Error("Deprovision failed. Instance does not exist", brokerapi.ErrInstanceDoesNotExist)
+	if !broker.instanceExists(instanceID) {
 		broker.LastOperationError = brokerapi.ErrInstanceDoesNotExist
 		return brokerapi.DeprovisionServiceSpec{IsAsync: false}, brokerapi.ErrInstanceDoesNotExist
 	}
 
-	//Deprovision
-	if err := broker.Rados.DeleteUser(instanceID, createTenantID(instanceID)); err != nil {
-		broker.Logger.Error("Deprovision failed. Couldn't delete user", err)
+	if broker.hasBinds(instanceID) {
+		err := brokerapi.NewFailureResponse(errors.New("Deprovision failed because the instance has binds. All binds under this instance must be unbound before deprovisioning."),
+			403, "deprovision-with-existing-binds")
 		broker.LastOperationError = err
 		return brokerapi.DeprovisionServiceSpec{}, err
 	}
 
-	broker.ProvisionedInstanceIDs = removeFromSlice(instanceID, broker.ProvisionedInstanceIDs)
+	//Deprovision
+	if err := broker.Rados.DeleteUser(instanceID, createTenantID(instanceID)); err != nil {
+		broker.LastOperationError = err
+		return brokerapi.DeprovisionServiceSpec{}, err
+	}
+
+	if err := broker.S3.DeleteObject(BucketName, getInstanceObjName(instanceID)); err != nil {
+		broker.LastOperationError = err
+		return brokerapi.DeprovisionServiceSpec{}, err
+	}
+
 	broker.DeprovisionDetails = details
+	broker.AsyncAllowed = asyncAllowed
 	broker.LastOperationError = nil
 
 	return brokerapi.DeprovisionServiceSpec{}, nil
@@ -220,19 +214,16 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	broker.BrokerCalled = true
 
 	if broker.BindError != nil {
-		broker.Logger.Error("Bind failed", broker.BindError)
 		broker.LastOperationError = broker.BindError
 		return brokerapi.Binding{}, broker.BindError
 	}
 
-	if !sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
-		broker.Logger.Error("Bind failed. Instance does not exist", brokerapi.ErrInstanceDoesNotExist)
+	if !broker.instanceExists(instanceID) {
 		broker.LastOperationError = brokerapi.ErrInstanceDoesNotExist
 		return brokerapi.Binding{}, brokerapi.ErrInstanceDoesNotExist
 	}
 
-	if sliceContains(instanceID, broker.BoundInstanceIDs) && sliceContains(bindingID, broker.BoundBindingIDs) {
-		broker.Logger.Error("Bind failed. Already bound to this instance", brokerapi.ErrBindingAlreadyExists)
+	if broker.bindingExists(instanceID, bindingID) {
 		broker.LastOperationError = brokerapi.ErrBindingAlreadyExists
 		return brokerapi.Binding{}, brokerapi.ErrBindingAlreadyExists
 	}
@@ -240,7 +231,6 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	//S3 info
 	s3Key, err := broker.Rados.CreateS3Key(instanceID, createTenantID(instanceID))
 	if err != nil {
-		broker.Logger.Error("Bind failed. Couldn't create s3 key", err)
 		broker.LastOperationError = err
 		return brokerapi.Binding{}, err
 	}
@@ -248,14 +238,12 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 	//Swift info
 	_, err = broker.Rados.CreateSubuser(instanceID, bindingID, createTenantID(instanceID))
 	if err != nil {
-		broker.Logger.Error("Bind failed. Couldn't create swift key (subuser)", err)
 		broker.LastOperationError = err
 		return brokerapi.Binding{}, err
 	}
 
 	userInfo, err := broker.Rados.GetUser(instanceID, createTenantID(instanceID), false)
 	if err != nil {
-		broker.Logger.Error("Bind failed. Couldn't get user information (to get swift key)", err)
 		broker.LastOperationError = err
 		return brokerapi.Binding{}, err
 	}
@@ -272,9 +260,8 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 		SwiftEndpoint:  broker.BrokerConfig.SwiftEndpoint,
 	}
 
-	//Add to list of binds
-
-	broker.Binds[bindingID] = Bind{
+	//Store bind information
+	b := Bind{
 		User:        instanceID,
 		Subuser:     bindingID,
 		Tenant:      createTenantID(instanceID),
@@ -282,9 +269,18 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 		SwiftKey:    creds.SwiftSecretKey,
 	}
 
+	j, err := json.Marshal(b)
+	if err != nil {
+		broker.LastOperationError = err
+		return brokerapi.Binding{}, err
+	}
+
+	if err := broker.S3.PutObject(BucketName, getBindObjName(instanceID, bindingID), string(j)); err != nil {
+		broker.LastOperationError = err
+		return brokerapi.Binding{}, err
+	}
+
 	broker.BoundBindingDetails = details
-	broker.BoundBindingIDs = append(broker.BoundBindingIDs, bindingID)
-	broker.BoundInstanceIDs = append(broker.BoundInstanceIDs, instanceID)
 	broker.LastOperationError = nil
 
 	return brokerapi.Binding{Credentials: creds}, nil
@@ -295,39 +291,48 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 
 	//Error checking
 	if broker.UnbindError != nil {
-		broker.Logger.Error("Unbind failed", broker.UnbindError)
 		broker.LastOperationError = broker.UnbindError
 		return broker.UnbindError
 	}
 
-	if !sliceContains(instanceID, broker.ProvisionedInstanceIDs) {
-		broker.Logger.Error("Unbind failed. Instance not found", brokerapi.ErrInstanceDoesNotExist)
-		broker.LastOperationError = brokerapi.ErrBindingDoesNotExist
+	if !broker.instanceExists(instanceID) {
+		broker.LastOperationError = brokerapi.ErrInstanceDoesNotExist
 		return brokerapi.ErrInstanceDoesNotExist
 	}
 
-	if !sliceContains(bindingID, broker.BoundBindingIDs) {
-		broker.Logger.Error("Unbind failed. Binding not found", brokerapi.ErrBindingDoesNotExist)
+	if !broker.bindingExists(instanceID, bindingID) {
 		broker.LastOperationError = brokerapi.ErrBindingDoesNotExist
 		return brokerapi.ErrBindingDoesNotExist
 	}
 
 	//Delete bind resources
-	bind := broker.Binds[bindingID]
+	j, err := broker.S3.GetObjectString(BucketName, getBindObjName(instanceID, bindingID))
+	if err != nil {
+		broker.LastOperationError = err
+		return err
+	}
+
+	bind := Bind{}
+	err = utils.LoadJson(j, &bind)
+	if err != nil {
+		broker.LastOperationError = err
+		return err
+	}
+
 	if err := broker.Rados.DeleteS3Key(bind.User, bind.Tenant, bind.S3AccessKey); err != nil {
-		broker.Logger.Error("Unbind failed. Couldn't delete S3 key", err)
 		broker.LastOperationError = err
 		return err
 	}
 
 	if err := broker.Rados.DeleteSubuser(bind.User, bind.Subuser, bind.Tenant); err != nil {
-		broker.Logger.Error("Unbind failed. Couldn't delete Swift key (subuser)", err)
 		broker.LastOperationError = err
 		return err
 	}
-	delete(broker.Binds, bindingID)
-	broker.BoundBindingIDs = removeFromSlice(bindingID, broker.BoundBindingIDs)
-	broker.BoundInstanceIDs = removeFromSlice(instanceID, broker.BoundInstanceIDs)
+
+	if err := broker.S3.DeleteObject(BucketName, getBindObjName(instanceID, bindingID)); err != nil {
+		broker.LastOperationError = err
+		return err
+	}
 
 	broker.UnbindingDetails = details
 	broker.LastOperationError = nil

@@ -6,6 +6,7 @@ import (
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/broker"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	rg "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
+	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/s3"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 	"net/http"
 	"os"
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	services := []brokerapi.Service{}
-	err = utils.LoadJson("brokerConfig/service-config.json", &services)
+	err = utils.LoadJsonFromFile("brokerConfig/service-config.json", &services)
 	if err != nil {
 		logger.Error("Failed to load service config", err)
 		return
@@ -41,20 +42,34 @@ func main() {
 		return
 	}
 
-	brok := &broker.Broker{
-		Logger:        logger,
-		Rados:         rados,
-		ServiceConfig: services,
-		BrokerConfig:  bc,
-		Binds:         make(map[string]broker.Bind),
+	//Create s3 client
+	s := &s3.S3{}
+	err = s.Connect(bc.RadosEndpoint, bc.RadosAccessKey, bc.RadosSecretKey, false)
+	if err != nil {
+		logger.Error("Failed to connect to S3", err)
+		return
 	}
-	creds := brokerapi.BrokerCredentials{Username: bc.BrokerUsername, Password: bc.BrokerPassword}
+
+	brok := &broker.Broker{
+		Logger:            logger,
+		Rados:             rados,
+		ServiceConfig:     services,
+		BrokerConfig:      bc,
+		S3:                s,
+		ShouldReturnAsync: false,
+	}
+
+	if b, _ := s.BucketExists(broker.BucketName); !b {
+		if err = s.CreateBucket(broker.BucketName); err != nil {
+			logger.Error("Failed to create base bucket for the broker", err)
+			return
+		}
+	}
 
 	//Start the broker
+	creds := brokerapi.BrokerCredentials{Username: bc.BrokerUsername, Password: bc.BrokerPassword}
 	handler := brokerapi.New(brok, logger, creds)
 	http.Handle("/", handler)
-	logger.Debug("Handling requests")
-
 	logger.Debug("Listen and serve on port: 8080")
 	_ = http.ListenAndServe(":8080", nil)
 }

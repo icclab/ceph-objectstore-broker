@@ -39,7 +39,7 @@ func TestBroker(t *testing.T) {
 	}
 
 	s := []brokerapi.Service{}
-	if err := utils.LoadJson("../brokerConfig/service-config.json", &s); err != nil {
+	if err := utils.LoadJsonFromFile("../brokerConfig/service-config.json", &s); err != nil {
 		t.Fatal("Failed to load service config")
 	}
 
@@ -140,8 +140,8 @@ func TestBroker(t *testing.T) {
 
 	//Deprovision
 	resp, err = req.Delete(baseUrl + "/service_instances/" + instID)
-	t.Run("Test Unprovision", CheckErrs(t, nil, err, Equals(200, resp.StatusCode(), "Unexpected status code")))
+	t.Run("Test Deprovision", CheckErrs(t, nil, err, Equals(200, resp.StatusCode(), "Unexpected status code")))
 
 	resp, err = req.Delete(baseUrl + "/service_instances/" + instID)
-	t.Run("Test Unprovision Repeat", CheckErrs(t, nil, err, Equals(410, resp.StatusCode(), "Unexpected status code")))
+	t.Run("Test Deprovision Repeat", CheckErrs(t, nil, err, Equals(410, resp.StatusCode(), "Unexpected status code")))
 }
