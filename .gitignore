@@ -27,4 +27,4 @@ _testmain.go
 vendor/*
 .vscode/*
 vars-file.yml
-tests.env
+*.env

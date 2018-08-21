@@ -9,7 +9,7 @@ import (
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/broker"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	rgw "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
-	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/testutils"
+	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/tests/testutils"
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 	"strconv"
 	"strings"

@@ -3,7 +3,7 @@ package tests
 import (
 	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
 	rgw "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
-	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/testutils"
+	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/tests/testutils"
 	"testing"
 )
 
