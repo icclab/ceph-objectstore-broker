@@ -22,7 +22,7 @@ type Bind struct {
 
 type BindCreds struct {
 	S3User      string `json:"s3User"`
-	S3AccessKey string `json:"s3AcessKey"`
+	S3AccessKey string `json:"s3AccessKey"`
 	S3SecretKey string `json:"s3SecretKey"`
 	S3Endpoint  string `json:"s3Endpoint"`
 
