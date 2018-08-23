@@ -12,4 +12,6 @@ applications:
     BROKER_PASSWORD: ((broker_password))
     S3_PATH: ((s3_path))
     SWIFT_PATH: ((swift_path))
+    BUCKET_NAME: ((bucket_name))
     INSTANCE_LIMIT: ((instance_limit))
+    INSTANCE_PREFIX: ((instance_prefix))

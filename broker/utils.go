@@ -8,18 +8,18 @@ import (
 )
 
 func (b *Broker) instanceExists(instID string) bool {
-	_, err := b.S3.GetObjectInfo(BucketName, getInstanceObjName(instID))
+	_, err := b.S3.GetObjectInfo(b.BrokerConfig.BucketName, b.getInstanceObjName(instID))
 	return err == nil
 }
 
 func (b *Broker) bindingExists(instID string, bindID string) bool {
-	_, err := b.S3.GetObjectInfo(BucketName, getBindObjName(instID, bindID))
+	_, err := b.S3.GetObjectInfo(b.BrokerConfig.BucketName, b.getBindObjName(instID, bindID))
 	return err == nil
 }
 
 //Returns the number of provisioned instances
 func (b *Broker) provisionCount() int {
-	objs, done := b.S3.GetObjects(BucketName, instancePrefix, false)
+	objs, done := b.S3.GetObjects(b.BrokerConfig.BucketName, b.BrokerConfig.InstancePrefix, false)
 	defer close(done)
 	count := 0
 	for range objs {
@@ -30,7 +30,7 @@ func (b *Broker) provisionCount() int {
 
 //Returns true if the provisioned instance has any binds
 func (b *Broker) hasBinds(instID string) bool {
-	objs, done := b.S3.GetObjects(BucketName, getInstanceObjName(instID)+"/", false)
+	objs, done := b.S3.GetObjects(b.BrokerConfig.BucketName, b.getInstanceObjName(instID)+"/", false)
 	defer close(done)
 	for range objs {
 		return true
@@ -67,13 +67,13 @@ func createTenantID(instanceID string) string {
 }
 
 //Converts the instance ID into the object name format
-func getInstanceObjName(instID string) string {
-	return instancePrefix + instID
+func (b *Broker) getInstanceObjName(instID string) string {
+	return b.BrokerConfig.InstancePrefix + instID
 }
 
 //Converts the instance and binding IDs into the object name format
-func getBindObjName(instID string, bindID string) string {
-	return instancePrefix + instID + "/" + bindID
+func (b *Broker) getBindObjName(instID string, bindID string) string {
+	return b.BrokerConfig.InstancePrefix + instID + "/" + bindID
 }
 
 func sliceContains(needle string, haystack []string) bool {

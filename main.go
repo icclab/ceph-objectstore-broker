@@ -59,8 +59,8 @@ func main() {
 		ShouldReturnAsync: false,
 	}
 
-	if b, _ := s.BucketExists(broker.BucketName); !b {
-		if err = s.CreateBucket(broker.BucketName); err != nil {
+	if b, _ := s.BucketExists(bc.BucketName); !b {
+		if err = s.CreateBucket(bc.BucketName); err != nil {
 			logger.Error("Failed to create base bucket for the broker", err)
 			return
 		}

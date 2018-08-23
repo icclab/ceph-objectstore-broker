@@ -12,12 +12,13 @@ type BrokerConfig struct {
 	RadosAdminPath string
 	RadosEndpoint  string
 
-	S3Endpoint    string
-	SwiftEndpoint string
-
+	S3Endpoint     string
+	SwiftEndpoint  string
+	BucketName     string
 	BrokerUsername string
 	BrokerPassword string
 	InstanceLimit  int
+	InstancePrefix string
 }
 
 func (b *BrokerConfig) Update() error {
@@ -26,6 +27,8 @@ func (b *BrokerConfig) Update() error {
 	const swiftPath = "/auth/v1.0"
 	const radosAdmin = "admin"
 	const instanceLimit = 2000
+	const bucketName = "ceph-objectstore-broker"
+	const instancePrefix = "instances/"
 
 	//Required params
 	if b.RadosAccessKey = os.Getenv("RADOS_ACCESS_KEY"); b.RadosAccessKey == "" {
@@ -60,6 +63,12 @@ func (b *BrokerConfig) Update() error {
 		b.SwiftEndpoint = b.RadosEndpoint + swiftPath
 	}
 
+	if v := os.Getenv("BUCKET_NAME"); v != "" {
+		b.BucketName = v
+	} else {
+		b.BucketName = bucketName
+	}
+
 	if v := os.Getenv("RADOS_ADMIN"); v != "" {
 		b.RadosAdminPath = b.RadosAdminPath + v
 	} else {
@@ -76,6 +85,12 @@ func (b *BrokerConfig) Update() error {
 		b.InstanceLimit = l
 	} else {
 		b.InstanceLimit = instanceLimit
+	}
+
+	if v := os.Getenv("INSTANCE_PREFIX"); v != "" {
+		b.InstancePrefix = v
+	} else {
+		b.InstancePrefix = instancePrefix
 	}
 
 	return nil

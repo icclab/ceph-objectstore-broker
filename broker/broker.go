@@ -65,9 +65,6 @@ type Broker struct {
 	S3 *s3.S3
 }
 
-const BucketName = "ceph-objectstore-broker"
-const instancePrefix = "instances/"
-
 func (broker *Broker) Services(ctx context.Context) ([]brokerapi.Service, error) {
 	broker.BrokerCalled = true
 	//All possible service-config can be found here: https://github.com/openservicebrokerapi/servicebroker/blob/master/spec.md#input-parameters-schema-object
@@ -111,7 +108,7 @@ func (broker *Broker) Provision(context context.Context, instanceID string, deta
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
-	if err := broker.S3.PutObject(BucketName, getInstanceObjName(instanceID), ""); err != nil {
+	if err := broker.S3.PutObject(broker.BrokerConfig.BucketName, broker.getInstanceObjName(instanceID), ""); err != nil {
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
@@ -198,7 +195,7 @@ func (broker *Broker) Deprovision(context context.Context, instanceID string, de
 		return brokerapi.DeprovisionServiceSpec{}, err
 	}
 
-	if err := broker.S3.DeleteObject(BucketName, getInstanceObjName(instanceID)); err != nil {
+	if err := broker.S3.DeleteObject(broker.BrokerConfig.BucketName, broker.getInstanceObjName(instanceID)); err != nil {
 		broker.LastOperationError = err
 		return brokerapi.DeprovisionServiceSpec{}, err
 	}
@@ -275,7 +272,7 @@ func (broker *Broker) Bind(context context.Context, instanceID, bindingID string
 		return brokerapi.Binding{}, err
 	}
 
-	if err := broker.S3.PutObject(BucketName, getBindObjName(instanceID, bindingID), string(j)); err != nil {
+	if err := broker.S3.PutObject(broker.BrokerConfig.BucketName, broker.getBindObjName(instanceID, bindingID), string(j)); err != nil {
 		broker.LastOperationError = err
 		return brokerapi.Binding{}, err
 	}
@@ -306,7 +303,7 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 	}
 
 	//Delete bind resources
-	j, err := broker.S3.GetObjectString(BucketName, getBindObjName(instanceID, bindingID))
+	j, err := broker.S3.GetObjectString(broker.BrokerConfig.BucketName, broker.getBindObjName(instanceID, bindingID))
 	if err != nil {
 		broker.LastOperationError = err
 		return err
@@ -329,7 +326,7 @@ func (broker *Broker) Unbind(context context.Context, instanceID, bindingID stri
 		return err
 	}
 
-	if err := broker.S3.DeleteObject(BucketName, getBindObjName(instanceID, bindingID)); err != nil {
+	if err := broker.S3.DeleteObject(broker.BrokerConfig.BucketName, broker.getBindObjName(instanceID, bindingID)); err != nil {
 		broker.LastOperationError = err
 		return err
 	}
