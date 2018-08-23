@@ -1,7 +1,10 @@
 package: github.engineering.zhaw.ch/kaio/ceph-objectstore-broker
 import:
 - package: code.cloudfoundry.org/lager
+- package: github.com/minio/minio-go
 - package: github.com/myENA/radosgwadmin
 - package: github.com/myENA/restclient
-- package: github.com/ncw/swift
 - package: github.com/pivotal-cf/brokerapi
+testImport:
+- package: github.com/go-resty/resty
+- package: github.com/ncw/swift
