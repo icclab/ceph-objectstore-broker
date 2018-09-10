@@ -28,3 +28,6 @@ vendor/*
 .vscode/*
 vars-file.yml
 *.env
+#Ignore the binary
+main
+k8s-configMap.yaml
