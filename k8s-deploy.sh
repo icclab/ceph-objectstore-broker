@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Updating ConfigMap"
+echo -e "\e[93mUpdating ConfigMap\e[39m"
 kubectl apply -f "k8s-configMap.yaml"
 
-echo "Updating Deployment"
+echo -e "\e[93mUpdating Deployment\e[39m"
 kubectl apply -f "k8s-deployment.yaml"
