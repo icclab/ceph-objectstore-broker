@@ -19,5 +19,5 @@ spec:
         - containerPort: 8080
         envFrom:
         - configMapRef:
-            name: broker-env
+            name: cosb-env
         
