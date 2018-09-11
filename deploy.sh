@@ -6,7 +6,11 @@ if [ $# = 0 ] || [ $1 = "-h" ] || [ $1 = "--help" ]; then
 fi
 
 if [ $1 = "cf" ]; then
-    cf push $1 -f "manifest.yml" --vars-file="vars-file.yml"
+    if [ $# -lt 2 ]; then
+        echo -e "Please provide the \e[93mAPP_NAME\e[39m to be used for the deployment."
+        exit
+    fi
+    cf push $2 -f "manifest.yml" --vars-file="vars-file.yml"
 elif [ $1 = "k8s" ]; then
     echo -e "\e[93mUpdating ConfigMap\e[39m"
     kubectl apply -f "k8s-configMap.yaml"
