@@ -1,0 +1,16 @@
+#Required
+rados_access_key: "SomeKey"
+rados_secret_key: "SomeVeryLongSecretKey"
+#7480 is the default port. Change if needed
+rados_endpoint: "http://my.rados-gateway.endpoint.com:7480"
+broker_username: "broker-username"
+broker_password: "MySecretBrokerPassword"
+
+#Optional (can be left to these defaults)
+s3_path: "/"
+swift_path: "/auth/v1.0"
+bucket_name: "ceph-objectstore-broker"
+#The rados admin needs to match the option on your object store gateway (default is 'admin')
+rados_admin: "admin"
+instance_limit: "2000"
+instance_prefix: "instances/"

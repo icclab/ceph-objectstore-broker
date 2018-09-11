@@ -30,4 +30,4 @@ vars-file.yml
 *.env
 #Ignore the binary
 main
-configMap.yaml
+configMap.yml

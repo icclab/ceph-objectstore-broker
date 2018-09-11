@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Route
+metadata:
+  name: cosb-route
+spec:
+  path: "/cosb-service"
+  to:
+    kind: Service
+    name: cosb-service
