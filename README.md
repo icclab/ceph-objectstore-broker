@@ -7,10 +7,10 @@ and can currently be deployed as CloudFoundry app, on Kubernetes or on OpenShift
 
 * [General Operation](#General-Operation)
 * [Deployment](#Deployment)
-    * [Prerequisites](#Prerequisites)
-    * [CloudFoundry](#CloudFoundry)
-    * [Bosh Release](#Bosh-Release)
-    * [Kubernetes](#Kubernetes)
+  * [Prerequisites](#Prerequisites)
+  * [CloudFoundry](#CloudFoundry)
+  * [Bosh Release](#Bosh-Release)
+  * [Kubernetes & OpenShift](#Kubernetes-&-OpenShift)
 * [Integration Tests](#Integration-Tests)
 
 ## General Operation
@@ -51,8 +51,25 @@ Once the broker is running on CF, it needs to be registered with CF and then the
 use ```cf create-service-broker SERVICE_BROKER BROKER_USERNAME BROKER_PASSWORD BROKER_URL```. Then to make the service public
 run ```cf enable-service-access ceph-object-store```, where 'ceph-object-store' is the name of the service provided in ```brokerConfig/service-config.json```.
 
-### Kubernetes
+### Kubernetes & OpenShift
+
+Deployment to k8s and OS are both done by using the following files:
+
+* configMap.yml (Automatically created using your ```vars-file.yml```)
+* deployment.yml
+* service.yml
+* route.yml (only for OS)
+
+To deploy use ```./deploy.sh k8s``` or ```./deploy.sh os```. These commands will set the configMap, deploy the broker and then create a service for it that uses a node port.
+In the case of OS, it also creates a route for the broker using the default host.
 
 ### Bosh Release
 
 ## Integration Tests
+
+To run the tests:
+1) Fulfill the required [prerequisites](../README.md#Prerequisites)
+2) Run ```./create-configMap```
+3) Run ````source tests/tests.env````
+4) Run ````go run main.go````
+5) In the ```tests``` folder run ````go test```` or ````go test -v```` for more details

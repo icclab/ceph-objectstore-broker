@@ -15,27 +15,33 @@ elif [ $1 = "os" ]; then
 fi
 
 if [ $1 = "cf" ]; then
+
     if [ $# -lt 2 ]; then
         echo -e "Please provide the \e[93mAPP_NAME\e[39m to be used for the deployment."
         exit
     fi
     cf push $2 -f "manifest.yml" --vars-file="vars-file.yml"
 elif [ $BIN != "none" ]; then
-    echo -e "\e[93mUpdating ConfigMap\e[39m"
+
+    echo -e "\e[93mUpdating the ConfigMap file\e[39m"
+    ./create-configMap
+
+    echo -e "\e[93mApplying ConfigMap\e[39m"
     $BIN apply -f "configMap.yml"
 
-    echo -e "\e[93mUpdating Deployment\e[39m"
+    echo -e "\e[93mApplying Deployment\e[39m"
     $BIN apply -f "deployment.yml"
 
-    echo -e "\e[93mUpdating Deployment\e[39m"
+    echo -e "\e[93mApplying Service\e[39m"
     $BIN apply -f "service.yml"
 
     #Apply the route if we are using openshift
     if [ $BIN = "oc" ]; then
-        echo -e "\e[93mUpdating Route\e[39m"
+        echo -e "\e[93mApplying Route\e[39m"
         $BIN apply -f "route.yml"
     fi
 else
+    
     echo "Command '$1' not found."
     echo "Run './deploy.sh -h' for help"
 fi
