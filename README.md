@@ -9,8 +9,8 @@ and can currently be deployed as CloudFoundry app, on Kubernetes or on OpenShift
 * [Deployment](#Deployment)
   * [Prerequisites](#Prerequisites)
   * [CloudFoundry](#CloudFoundry)
-  * [Bosh Release](#Bosh-Release)
   * [Kubernetes & OpenShift](#Kubernetes-&-OpenShift)
+  * [Bosh Release](#Bosh-Release)
 * [Integration Tests](#Integration-Tests)
 
 ## General Operation
@@ -60,8 +60,12 @@ Deployment to k8s and OS are both done by using the following files:
 * service.yml
 * route.yml (only for OS)
 
-To deploy use ```./deploy.sh k8s``` or ```./deploy.sh os```. These commands will set the configMap, deploy the broker and then create a service for it that uses a node port.
-In the case of OS, it also creates a route for the broker using the default host.
+To deploy use ```./deploy.sh k8s``` or ```./deploy.sh os```. These commands will set the configMap, deploy the broker and then create a service for it. In the case of OS,
+it also creates a route for the broker using the default host.
+
+For k8s, the default service created uses a [NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#nodeport) to expose the broker, however depending on your
+platform you might want to use something like a loadbalancer, in which case you can just edit the relevant yaml files and then use the deployment script to deploy with your
+own configuration.
 
 ### Bosh Release
 
