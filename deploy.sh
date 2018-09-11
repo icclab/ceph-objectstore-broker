@@ -22,13 +22,13 @@ if [ $1 = "cf" ]; then
     cf push $2 -f "manifest.yml" --vars-file="vars-file.yml"
 elif [ $BIN != "none" ]; then
     echo -e "\e[93mUpdating ConfigMap\e[39m"
-    $BIN apply -f "k8s-configMap.yaml"
+    $BIN apply -f "configMap.yaml"
 
     echo -e "\e[93mUpdating Deployment\e[39m"
-    $BIN apply -f "k8s-deployment.yaml"
+    $BIN apply -f "deployment.yaml"
 
     echo -e "\e[93mUpdating Deployment\e[39m"
-    $BIN apply -f "k8s-service.yaml"
+    $BIN apply -f "service.yaml"
 else
     echo "Command '$1' not found."
     echo "Run './deploy.sh -h' for help"
