@@ -32,8 +32,8 @@ elif [ $BIN != "none" ]; then
     echo -e "\e[93mApplying Secret\e[39m"
     $BIN apply -f "deployment-configs/k8s/secret.yml"
 
-    echo -e "\e[93mProcessing and Applying cosb Template\e[39m"
-    $BIN process -f "deployment-configs/k8s/template.yml" | $BIN apply -f -
+    echo -e "\e[93mApplying Deployment\e[39m"
+    $BIN apply -f "deployment-configs/k8s/deployment.yml"
 
     #Apply the route if we are using openshift
     if [ $BIN = "oc" ]; then
