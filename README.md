@@ -69,11 +69,13 @@ own configuration.
 
 ### Bosh Release
 
+Planned.
+
 ## Integration Tests
 
 To run the tests:
 1) Fulfill the required [prerequisites](../README.md#Prerequisites)
 2) Run ```./create-configMap```
-3) Run ````source tests/tests.env````
-4) Run ````go run main.go````
-5) In the ```tests``` folder run ````go test```` or ````go test -v```` for more details
+3) Run ```source tests/tests.env```
+4) Run ```go run main.go```
+5) In the ```tests``` folder run ```go test``` or ```go test -v``` for more details

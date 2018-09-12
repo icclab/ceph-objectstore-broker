@@ -3,7 +3,7 @@ kind: Route
 metadata:
   name: cosb-route
 spec:
-  path: "/cosb-service"
+  path: "/"
   to:
     kind: Service
     name: cosb-service

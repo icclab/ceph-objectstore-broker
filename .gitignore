@@ -30,4 +30,6 @@ vars-file.yml
 *.env
 #Ignore the binary
 main
-configMap.yml
+deployment-configs/k8s/config-map.yml
+deployment-configs/k8s/secret.yml
+del-os\.sh
