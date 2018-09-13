@@ -32,7 +32,7 @@ elif [ $BIN != "none" ]; then
     echo -e "\e[93mApplying Secret\e[39m"
     $BIN apply -f "deployment-configs/k8s/secret.yml"
 
-    echo -e "\e[93mApplying Deployment\e[39m"
+    echo -e "\e[93mApplying Deployment and Service\e[39m"
     $BIN apply -f "deployment-configs/k8s/deployment.yml"
 
     #Apply the route if we are using openshift

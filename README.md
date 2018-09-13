@@ -87,7 +87,7 @@ Planned.
 ## Integration Tests
 
 To run the tests:
-1) Fulfill the required [prerequisites](../README.md#Prerequisites)
+1) Fulfill the required [prerequisites](#Prerequisites)
 2) Run `./create-configMap`
 3) Run `source tests/tests.env`
 4) Run `go run main.go`
