@@ -59,7 +59,7 @@ Once the broker is running on CF, it needs to be registered with CF and then the
 use `cf create-service-broker SERVICE_BROKER BROKER_USERNAME BROKER_PASSWORD BROKER_URL`. Then to make the service public
 run `cf enable-service-access ceph-object-store`, where 'ceph-object-store' is the name of the service provided in `brokerConfig/service-config.json`.
 
-<a name="Kubernetes & OpenShift"></a>
+<a name="Kubernetes-&-OpenShift"></a>
 ### Kubernetes & OpenShift
 
 Deployment to k8s and OS are both done by using the following files:
