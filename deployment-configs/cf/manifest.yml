@@ -2,6 +2,7 @@
 applications:
 - name: ceph-objectstore-broker
   memory: 100M
+  disk_quota: 50MB
   instances: 1
   env:
     RADOS_ACCESS_KEY: ((rados_access_key))
