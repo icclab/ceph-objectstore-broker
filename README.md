@@ -13,6 +13,7 @@ and can currently be deployed as CloudFoundry app, on Kubernetes or on OpenShift
   * [Bosh Release](#Bosh-Release)
 * [Integration Tests](#Integration-Tests)
 
+<a name="General-Operation"></a>
 ## General Operation
 
 The service provided by the broker and its plans are in the `brokerConfig/service-config.json` file. You can edit this to your liking before deploying.
@@ -33,10 +34,12 @@ The credentials made available to the application (usually through environment v
 
 Unbinding and deprovisioning are simply reverse operations of the provision and bind stages.
 
+<a name="Deployment"></a>
 ## Deployment
 
 Deployment to all platforms is done through the `deploy.sh` file, so once prerequisites for a platform are fulfilled the script can be used to deploy the broker.
 
+<a name="Prerequisites"></a>
 ### Prerequisites
 
 Before deploying to a platform, you need to provide the required details about your Ceph installation. Specifically you will need a
@@ -46,6 +49,7 @@ service, and so it requires a number of variables including the gateway's endpoi
 To provide the required information you will need a file called `vars-file.yml`. A template for this file called `vars-file-template.yml` is available, and so can simply
 be copied, renamed and then the details filled in.
 
+<a name="CloudFoundry"></a>
 ### CloudFoundry
 
 Deployment of the broker as an app running on CloudFoundry is controlled by the `manifest.yml` file, which requires no edits. To deploy simply
@@ -55,6 +59,7 @@ Once the broker is running on CF, it needs to be registered with CF and then the
 use `cf create-service-broker SERVICE_BROKER BROKER_USERNAME BROKER_PASSWORD BROKER_URL`. Then to make the service public
 run `cf enable-service-access ceph-object-store`, where 'ceph-object-store' is the name of the service provided in `brokerConfig/service-config.json`.
 
+<a name="Kubernetes & OpenShift"></a>
 ### Kubernetes & OpenShift
 
 Deployment to k8s and OS are both done by using the following files:
@@ -80,10 +85,12 @@ Kubernetes.
 
 **NOTE:** To apply the broker you need to be a user with sufficient privileges (e.g. system:admin)
 
+<a name="Bosh-Release"></a>
 ### Bosh Release
 
 Planned.
 
+<a name="Integration-Tests"></a>
 ## Integration Tests
 
 To run the tests:
