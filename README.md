@@ -79,11 +79,12 @@ platform you might want to use something like a loadbalancer, in which case you 
 own configuration.
 
 To register the broker you need to get the url of your broker (it could be deployed on a different platform), any certificates if you want encryption and then update
-the `deployment-configs/k8s/broker.yml`. If you don't use encryption then you simply need to set the url field. Once you have update the broker file
+the `deployment-configs/k8s/broker.yml`. If you don't use encryption then you simply need to set the url field. Once you have updated the broker file
 you can run `oc apply -f "deployment-configs/k8s/broker.yml"` or `kubectl apply -f "deployment-configs/k8s/broker.yml"`, depending if you are using OpenShift or
-Kubernetes.
+Kubernetes, respectively.
 
-**NOTE:** To apply the broker you need to be a user with sufficient privileges (e.g. system:admin)
+**NOTE:** To apply the broker file you need to have the [Service Catalog](https://kubernetes.io/docs/concepts/extend-kubernetes/service-catalog) installed on your Kubernetes
+cluster and be a user with sufficient privileges (e.g. system:admin on OpenShift).
 
 <a name="Bosh-Release"></a>
 ### Bosh Release
@@ -95,7 +96,7 @@ Planned.
 
 To run the tests:
 1) Fulfill the required [prerequisites](#Prerequisites)
-2) Run `./create-configMap`
+2) Run `./update-vars`
 3) Run `source tests/tests.env`
 4) Run `go run main.go`
 5) In the `tests` folder run `go test` or `go test -v` for more details
