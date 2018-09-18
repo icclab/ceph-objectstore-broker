@@ -49,6 +49,9 @@ service, and so it requires a number of variables including the gateway's endpoi
 To provide the required information you will need a file called `vars-file.yml`. A template for this file called `vars-file-template.yml` is available, and so can simply
 be copied, renamed and then the details filled in.
 
+Lastly, you will need [Go](https://golang.org/project/) installed as its used in the deployment script and in case you want to build yourself or run the integration tests.
+The broker has been developed with [Go V1.10.1](https://golang.org/doc/go1.10). It should theoretically work with older releases, but keep in mind that is not verified.
+
 <a name="CloudFoundry"></a>
 ### CloudFoundry
 
@@ -64,12 +67,14 @@ run `cf enable-service-access ceph-object-storage`, where 'ceph-object-storage' 
 
 Deployment to k8s and OS are both done by using the following files:
 
-* Automatically created/updated using your `vars-file.yml` via the `update-vars` binary (the binary is ran on deploy)
+* Automatically created/updated using your `vars-file.yml` via the `update-cosb-vars/update-vars.go` GO program, which is run on each deploy
   * config-map.yml
   * secret.yml
 * template.yml
 * route.yml (only for OS)
 * broker.yml (Manually used to register after deployment)
+
+**Before you deploy**, please make sure you have `kubectl` or `oc` installed and that you are logged in to your cluster, as they are used to deploy to k8s and OS, respectively.
 
 To deploy use `./deploy.sh k8s` or `./deploy.sh os`. These commands will set the config-map, secret, deploy the broker application and then create a service for it. In
 the case of OS, it also creates a route for the broker and displays the url of the created route.
@@ -96,7 +101,7 @@ Planned.
 
 To run the tests:
 1) Fulfill the required [prerequisites](#Prerequisites)
-2) Run `./update-vars`
+2) Run `go run update-cosb-vars/update-vars.go`
 3) Run `source tests/tests.env`
 4) Run `go run main.go`
 5) In the `tests` folder run `go test` or `go test -v` for more details
