@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//hi
 func main() {
 	varsFile, err := os.Open("vars-file.yml")
 	if err != nil {
