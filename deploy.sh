@@ -23,8 +23,8 @@ if [ $1 = "cf" ]; then
     cf push $2 -f "deployment-configs/cf/manifest.yml" --vars-file="vars-file.yml"
 elif [ $BIN != "none" ]; then
 
-    echo -e "\e[93mUpdating the ConfigMap file\e[39m"
-    ./update-vars
+    echo -e "\e[93mUpdating the ConfigMap and Secrets files\e[39m"
+    go run update-cosb-vars/update-vars.go
 
     echo -e "\e[93mApplying ConfigMap\e[39m"
     $BIN apply -f "deployment-configs/k8s/config-map.yml"
