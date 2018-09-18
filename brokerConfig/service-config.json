@@ -1,13 +1,13 @@
 [
 	{
 		"id": "d70715af-9d44-441e-ad8e-229c25491c5f",
-		"name": "Ceph-Object-Store",
-		"description": "Swift and S3 object store service based on a Ceph backend.",
+		"name": "Ceph-Object-Storage",
+		"description": "Swift and S3 object storage service based on a Ceph backend.",
 		"bindable": true,
 		"instances_retrievable": false,
     	"bindings_retrievable": false,
 		"tags": [
-			"Object Store",
+			"Object Storage",
 			"Swift",
 			"S3",
 			"1000 Buckets/Containers"
@@ -66,8 +66,8 @@
 			}
 		],
 		"metadata": {
-			"displayName": "Ceph Object Store",
-			"longDescription": "Swift and S3 object store service based on a Ceph backend",
+			"displayName": "Ceph Object Storage",
+			"longDescription": "Swift and S3 object storage service based on a Ceph backend",
 			"providerDisplayName": "ZHAW"
 		}
 	}

@@ -1,6 +1,6 @@
-# Service Broker for a Ceph Object Store
+# Service Broker for Ceph Object Storage
 
-This broker is compliant with V2 of the [Open Service Broker API](https://www.openservicebrokerapi.org/). The broker provides access to a [Ceph](https://ceph.com/) object store,
+This broker is compliant with V2 of the [Open Service Broker API](https://www.openservicebrokerapi.org/). The broker provides access to [Ceph's](https://ceph.com/) object storage,
 and can currently be deployed as CloudFoundry app, on Kubernetes or on OpenShift. Deployment as a Bosh release is planned for the future.
 
 ## Table of Contents
@@ -53,11 +53,11 @@ be copied, renamed and then the details filled in.
 ### CloudFoundry
 
 Deployment of the broker as an app running on CloudFoundry is controlled by the `manifest.yml` file, which requires no edits. To deploy simply
-run `./deploy.sh cf ceph-objectstore-broker`, with the second argument being the name of the app on CF.
+run `./deploy.sh cf ceph-objectstorage-broker`, with the second argument being the name of the app on CF.
 
 Once the broker is running on CF, it needs to be registered with CF and then the plans need to be made public. To register the broker
 use `cf create-service-broker SERVICE_BROKER BROKER_USERNAME BROKER_PASSWORD BROKER_URL`. Then to make the service public
-run `cf enable-service-access ceph-object-store`, where 'ceph-object-store' is the name of the service provided in `brokerConfig/service-config.json`.
+run `cf enable-service-access ceph-object-storage`, where 'ceph-object-storage' is the name of the service provided in `brokerConfig/service-config.json`.
 
 <a name="Kubernetes-&-OpenShift"></a>
 ### Kubernetes & OpenShift
