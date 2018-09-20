@@ -1,7 +1,7 @@
 ---
 applications:
 - name: ceph-objectstore-broker
-  memory: 15M
+  memory: 25M
   disk_quota: 30MB
   instances: 1
   env:
