@@ -15,7 +15,7 @@ import (
 func main() {
 	//Init logger
 	logger := lager.NewLogger("broker")
-	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.INFO))
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 	logger.Debug("Broker starting")
 
