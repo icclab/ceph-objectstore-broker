@@ -1,0 +1,51 @@
+{
+    "tenant": "",
+    "user_id": "testuser",
+    "display_name": "testuser",
+    "email": "testuser@ena.com",
+    "suspended": 0,
+    "max_buckets": 1000,
+    "subusers": [
+        {
+            "id": "testuser:foxmulder",
+            "permissions": "read-write"
+        },
+        {
+            "id": "testuser:anotheruser",
+            "permissions": "read"
+        },
+        {
+            "id": "testuser:myfancyupload",
+            "permissions": "write"
+        }
+    ],
+    "keys": [
+        {
+            "user": "testuser:anotheruser",
+            "access_key": "99bottlesofbeeronthewall",
+            "secret_key": "takeondownpassitaround"
+        },
+        {
+            "user": "testuser",
+            "access_key": "werqwerqwerqwerqwerwer",
+            "secret_key": "imalasagnahoggohangasalami"
+        },
+        {
+            "user": "testuser:foxmulder",
+            "access_key": "jonsnowisasecrettargaryen",
+            "secret_key": "r+l=j,lol"
+        },
+        {
+            "user": "testuser:myfancyupload",
+            "access_key": "nobodybacksbabyintoacorner",
+            "secret_key": "roadhousewasanokaymovie"
+        }
+    ],
+    "swift_keys": [
+        {
+            "user": "testuser:foxmulder",
+            "secret_key": "smokingmanwasprettyweird"
+        }
+    ],
+    "caps": []
+}

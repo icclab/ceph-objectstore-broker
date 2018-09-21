@@ -1,0 +1,15 @@
+[integration]
+    TestUID = "integrationtests"
+    TestEmail = "integration@tests.com"
+    TestDisplayName = "Integration Test User"
+    TestSubUser = "testsubuser"
+    TestSubUser2 = "testsubuser2"
+    TestBucket = "testbucket"
+
+[rgw]
+    ClientTimeout = "120s"
+    ServerURL = "https://asdf.org/"
+    AdminPath = "admin"
+    AccessKeyID = "ABC123BLAHBLAHBLAH"
+    SecretAccessKey = "IMASUPERSECRETACCESSKEY"
+    DisableSSL = true

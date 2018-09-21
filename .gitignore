@@ -24,7 +24,7 @@ _testmain.go
 *.prof
 
 #Mine
-vendor/*
+#vendor/*
 .vscode/*
 vars-file.yml
 *.env
