@@ -5,6 +5,7 @@ import:
 - package: github.com/myENA/radosgwadmin
 - package: github.com/myENA/restclient
 - package: github.com/pivotal-cf/brokerapi
+  version: 2.0.5
 testImport:
 - package: github.com/go-resty/resty
 - package: github.com/ncw/swift

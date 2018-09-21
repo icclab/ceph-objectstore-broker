@@ -1,5 +1,5 @@
-hash: c557459c81a654c111a8dbc6550f35d4eb78da262e93f93547303bdc00148cc4
-updated: 2018-09-21T16:23:39.475680354+02:00
+hash: e09c4bb39922e9828d39c2163decfe58b75be8cdbfaf97435f847a27ceadd155
+updated: 2018-09-21T17:06:30.245930924+02:00
 imports:
 - name: code.cloudfoundry.org/lager
   version: b60e04e119450552243196105bae0d42179ee0ca
@@ -32,7 +32,7 @@ imports:
 - name: github.com/myENA/restclient
   version: b1e6192aef935835ec6e62987fcf61bd5bc74b7c
 - name: github.com/pivotal-cf/brokerapi
-  version: 176671d73d5fad1ad9d44e66846964da3fd32db6
+  version: 1d947bc993fc9a770418577540bebabb8657980a
   subpackages:
   - auth
 - name: github.com/pkg/errors
