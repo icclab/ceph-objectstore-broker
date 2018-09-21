@@ -17,7 +17,7 @@ func main() {
 	logger := lager.NewLogger("broker")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.INFO))
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
-	logger.Debug("Broker starting")
+	logger.Info("Broker starting")
 
 	//Load configs
 	bc := &brokerConfig.BrokerConfig{}
