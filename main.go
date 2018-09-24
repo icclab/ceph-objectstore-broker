@@ -2,12 +2,12 @@ package main
 
 import (
 	"code.cloudfoundry.org/lager"
+	"github.com/icclab/ceph-objectstore-broker/broker"
+	"github.com/icclab/ceph-objectstore-broker/brokerConfig"
+	rg "github.com/icclab/ceph-objectstore-broker/radosgw"
+	"github.com/icclab/ceph-objectstore-broker/s3"
+	"github.com/icclab/ceph-objectstore-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/broker"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
-	rg "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/s3"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 	"net/http"
 	"os"
 )

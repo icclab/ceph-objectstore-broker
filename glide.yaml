@@ -1,4 +1,4 @@
-package: github.engineering.zhaw.ch/kaio/ceph-objectstore-broker
+package: github.com/icclab/ceph-objectstore-broker
 import:
 - package: code.cloudfoundry.org/lager
 - package: github.com/minio/minio-go

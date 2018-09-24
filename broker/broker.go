@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/icclab/ceph-objectstore-broker/brokerConfig"
+	"github.com/icclab/ceph-objectstore-broker/radosgw"
+	"github.com/icclab/ceph-objectstore-broker/s3"
+	"github.com/icclab/ceph-objectstore-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/s3"
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/utils"
 )
 
 type Bind struct {

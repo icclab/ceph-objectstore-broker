@@ -1,9 +1,9 @@
 package tests
 
 import (
-	"github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/brokerConfig"
-	rgw "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/radosgw"
-	. "github.engineering.zhaw.ch/kaio/ceph-objectstore-broker/tests/testutils"
+	"github.com/icclab/ceph-objectstore-broker/brokerConfig"
+	rgw "github.com/icclab/ceph-objectstore-broker/radosgw"
+	. "github.com/icclab/ceph-objectstore-broker/tests/testutils"
 	"testing"
 )
 

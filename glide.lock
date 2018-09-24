@@ -1,5 +1,5 @@
-hash: e09c4bb39922e9828d39c2163decfe58b75be8cdbfaf97435f847a27ceadd155
-updated: 2018-09-21T17:06:30.245930924+02:00
+hash: a841c708848988184f9bc217c61457e8db84bdda4a23c0548818e121c5e2cb35
+updated: 2018-09-24T16:24:24.404108708+02:00
 imports:
 - name: code.cloudfoundry.org/lager
   version: b60e04e119450552243196105bae0d42179ee0ca
@@ -18,7 +18,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 9e1f5955c0d22b55d9e20d6faa28589f83b2faca
 - name: github.com/minio/minio-go
-  version: e8c97c88468e122f161683409cde02dc89a2961c
+  version: f01ef22c977052d716c74724874f932a16f047bb
   subpackages:
   - pkg/credentials
   - pkg/encrypt
@@ -53,7 +53,7 @@ imports:
   - idna
   - publicsuffix
 - name: golang.org/x/sys
-  version: d641721ec2dead6fe5ca284096fe4b1fcd49e427
+  version: c01370cb5c9b7812800ec97eb5692a14fb8d577c
   subpackages:
   - cpu
 - name: golang.org/x/text
