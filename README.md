@@ -94,7 +94,7 @@ cluster and be a user with sufficient privileges (e.g. system:admin on OpenShift
 <a name="Bosh-Release"></a>
 ### Bosh Release
 
-Planned.
+The BOSH release for the broker and related documentation can be found [here](https://github.com/icclab/ceph-objectstore-broker-boshrelease).
 
 <a name="Integration-Tests"></a>
 ## Integration Tests
