@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -277,6 +277,9 @@ func responseLogger(c *Client, res *Response) error {
 }
 
 func parseResponseBody(c *Client, res *Response) (err error) {
+	if res.StatusCode() == http.StatusNoContent {
+		return
+	}
 	// Handles only JSON or XML content type
 	ct := firstNonEmpty(res.Header().Get(hdrContentTypeKey), res.Request.fallbackContentType)
 	if IsJSONType(ct) || IsXMLType(ct) {

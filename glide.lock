@@ -1,10 +1,10 @@
 hash: a841c708848988184f9bc217c61457e8db84bdda4a23c0548818e121c5e2cb35
-updated: 2018-09-24T16:24:24.404108708+02:00
+updated: 2019-01-29T19:54:44.277617725+01:00
 imports:
 - name: code.cloudfoundry.org/lager
-  version: b60e04e119450552243196105bae0d42179ee0ca
-- name: github.com/go-ini/ini
-  version: fa25069db393aecc09b71267d0489b357781c860
+  version: 54c4f2530ddeb742ce9c9ee26f5fa758d6c1b3b6
+  subpackages:
+  - internal/truncate
 - name: github.com/go-playground/locales
   version: f63010822830b6fe52288ee52d5a1151088ce039
   subpackages:
@@ -16,9 +16,11 @@ imports:
   subpackages:
   - query
 - name: github.com/gorilla/mux
-  version: 9e1f5955c0d22b55d9e20d6faa28589f83b2faca
+  version: a7962380ca08b5a188038c69871b8d3fbdf31e89
+- name: github.com/leodido/go-urn
+  version: a67a23e1c1af3c66528573bb86a87246477277c1
 - name: github.com/minio/minio-go
-  version: f01ef22c977052d716c74724874f932a16f047bb
+  version: 3a5de8b1cf046bb419d1e35a1e725945603ff70c
   subpackages:
   - pkg/credentials
   - pkg/encrypt
@@ -26,7 +28,7 @@ imports:
   - pkg/s3utils
   - pkg/set
 - name: github.com/mitchellh/go-homedir
-  version: ae18d6b8b3205b561c79e8e5f69bff09736185f4
+  version: af06845cf3004701891bf4fdb884bfe4920b3727
 - name: github.com/myENA/radosgwadmin
   version: 8741f1049f3872a4b373b62372f0f8e754a22be1
 - name: github.com/myENA/restclient
@@ -36,37 +38,39 @@ imports:
   subpackages:
   - auth
 - name: github.com/pkg/errors
-  version: c059e472caf75dbe73903f6521a20abac245b17f
+  version: ffb6e22f01932bf7ac35e0bad9be11f01d1c8685
 - name: github.com/smartystreets/go-aws-auth
   version: 0c1422d1fdb9fef5a1ad5b2e13ac663467eb767e
 - name: github.com/spkg/bom
   version: 59b7046e48ad6bac800c5e1dd5142282cbfcf154
 - name: golang.org/x/crypto
-  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
+  version: bf88e3f4ba724b9852073e3d792ab18358069896
   subpackages:
   - argon2
   - blake2b
 - name: golang.org/x/net
-  version: 2f5d2388922f370f4355f327fcf4cfe9f5583908
+  version: d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf
   subpackages:
   - http/httpguts
   - idna
   - publicsuffix
 - name: golang.org/x/sys
-  version: c01370cb5c9b7812800ec97eb5692a14fb8d577c
+  version: 302c3dd5f1cc82baae8e44d9c3178e89b6e2b345
   subpackages:
   - cpu
 - name: golang.org/x/text
-  version: 905a57155faa8230500121607930ebb9dd8e139c
+  version: e6919f6577db79269a6443b9dc46d18f2238fb5d
   subpackages:
   - secure/bidirule
   - transform
   - unicode/bidi
   - unicode/norm
 - name: gopkg.in/go-playground/validator.v9
-  version: e69e9a28bb62b977fdc58d051f1bb477b7cbe486
+  version: 774d09c3863ffb2e137ebe4c39ba27648d208f80
+- name: gopkg.in/ini.v1
+  version: 6ed8d5f64cd79a498d1f3fab5880cc376ce41bbe
 testImports:
 - name: github.com/go-resty/resty
-  version: 466835fff5bb6e8a38889a76deb5994f03c25ef3
+  version: 0ecc38d58bec7c3a6c001c15e43a88e67e37ced1
 - name: github.com/ncw/swift
-  version: 7854abff473c41fdde529ebe4cf7db6334dd61ce
+  version: ba19fe35e796969e50f19bd748a770ec5d191ece

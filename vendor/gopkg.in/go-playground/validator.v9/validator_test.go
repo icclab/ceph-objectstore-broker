@@ -3714,6 +3714,152 @@ func TestUUIDValidation(t *testing.T) {
 	}
 }
 
+func TestUUID5RFC4122Validation(t *testing.T) {
+	tests := []struct {
+		param    string
+		expected bool
+	}{
+
+		{"", false},
+		{"xxxa987Fbc9-4bed-3078-cf07-9141ba07c9f3", false},
+		{"9c858901-8a57-4791-81Fe-4c455b099bc9", false},
+		{"a987Fbc9-4bed-3078-cf07-9141ba07c9f3", false},
+		{"987Fbc97-4bed-5078-af07-9141ba07c9f3", true},
+		{"987Fbc97-4bed-5078-9f07-9141ba07c9f3", true},
+	}
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, "uuid5_rfc4122")
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID5RFC4122 failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID5RFC4122 failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != "uuid5_rfc4122" {
+					t.Fatalf("Index: %d UUID5RFC4122 failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+}
+
+func TestUUID4RFC4122Validation(t *testing.T) {
+	tests := []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"xxxa987fbc9-4bed-3078-cf07-9141ba07c9F3", false},
+		{"a987fbc9-4bed-5078-af07-9141ba07c9F3", false},
+		{"934859", false},
+		{"57b73598-8764-4ad0-a76A-679bb6640eb1", true},
+		{"625e63f3-58f5-40b7-83a1-a72ad31acFfb", true},
+	}
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, "uuid4_rfc4122")
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID4RFC4122 failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID4RFC4122 failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != "uuid4_rfc4122" {
+					t.Fatalf("Index: %d UUID4RFC4122 failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+}
+
+func TestUUID3RFC4122Validation(t *testing.T) {
+	tests := []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"412452646", false},
+		{"xxxa987fbc9-4bed-3078-cf07-9141ba07c9F3", false},
+		{"a987fbc9-4bed-4078-8f07-9141ba07c9F3", false},
+		{"a987fbc9-4bed-3078-cf07-9141ba07c9F3", true},
+	}
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, "uuid3_rfc4122")
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID3RFC4122 failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUID3RFC4122 failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != "uuid3_rfc4122" {
+					t.Fatalf("Index: %d UUID3RFC4122 failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+}
+
+func TestUUIDRFC4122Validation(t *testing.T) {
+	tests := []struct {
+		param    string
+		expected bool
+	}{
+		{"", false},
+		{"xxxa987Fbc9-4bed-3078-cf07-9141ba07c9f3", false},
+		{"a987Fbc9-4bed-3078-cf07-9141ba07c9f3xxx", false},
+		{"a987Fbc94bed3078cf079141ba07c9f3", false},
+		{"934859", false},
+		{"987fbc9-4bed-3078-cf07a-9141ba07c9F3", false},
+		{"aaaaaaaa-1111-1111-aaaG-111111111111", false},
+		{"a987Fbc9-4bed-3078-cf07-9141ba07c9f3", true},
+	}
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, "uuid_rfc4122")
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUIDRFC4122 failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d UUIDRFC4122 failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != "uuid_rfc4122" {
+					t.Fatalf("Index: %d UUIDRFC4122 failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+}
+
 func TestISBNValidation(t *testing.T) {
 	tests := []struct {
 		param    string
@@ -5120,6 +5266,129 @@ func TestLtField(t *testing.T) {
 	AssertError(t, errs, "TimeTest2.End", "TimeTest2.End", "End", "End", "ltfield")
 }
 
+func TestFieldContains(t *testing.T) {
+	validate := New()
+
+	type StringTest struct {
+		Foo string `validate:"fieldcontains=Bar"`
+		Bar string
+	}
+
+	stringTest := &StringTest{
+		Foo: "foobar",
+		Bar: "bar",
+	}
+
+	errs := validate.Struct(stringTest)
+	Equal(t, errs, nil)
+
+	stringTest = &StringTest{
+		Foo: "foo",
+		Bar: "bar",
+	}
+
+	errs = validate.Struct(stringTest)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "StringTest.Foo", "StringTest.Foo", "Foo", "Foo", "fieldcontains")
+
+	errs = validate.VarWithValue("foo", "bar", "fieldcontains")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "fieldcontains")
+
+	errs = validate.VarWithValue("bar", "foobarfoo", "fieldcontains")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "fieldcontains")
+
+	errs = validate.VarWithValue("foobarfoo", "bar", "fieldcontains")
+	Equal(t, errs, nil)
+
+	type StringTestMissingField struct {
+		Foo string `validate:"fieldcontains=Bar"`
+	}
+
+	stringTestMissingField := &StringTestMissingField{
+		Foo: "foo",
+	}
+
+	errs = validate.Struct(stringTestMissingField)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "StringTestMissingField.Foo", "StringTestMissingField.Foo", "Foo", "Foo", "fieldcontains")
+}
+
+func TestFieldExcludes(t *testing.T) {
+	validate := New()
+
+	type StringTest struct {
+		Foo string `validate:"fieldexcludes=Bar"`
+		Bar string
+	}
+
+	stringTest := &StringTest{
+		Foo: "foobar",
+		Bar: "bar",
+	}
+
+	errs := validate.Struct(stringTest)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "StringTest.Foo", "StringTest.Foo", "Foo", "Foo", "fieldexcludes")
+
+	stringTest = &StringTest{
+		Foo: "foo",
+		Bar: "bar",
+	}
+
+	errs = validate.Struct(stringTest)
+	Equal(t, errs, nil)
+
+	errs = validate.VarWithValue("foo", "bar", "fieldexcludes")
+	Equal(t, errs, nil)
+
+	errs = validate.VarWithValue("bar", "foobarfoo", "fieldexcludes")
+	Equal(t, errs, nil)
+
+	errs = validate.VarWithValue("foobarfoo", "bar", "fieldexcludes")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "fieldexcludes")
+
+	type StringTestMissingField struct {
+		Foo string `validate:"fieldexcludes=Bar"`
+	}
+
+	stringTestMissingField := &StringTestMissingField{
+		Foo: "foo",
+	}
+
+	errs = validate.Struct(stringTestMissingField)
+	Equal(t, errs, nil)
+}
+
+func TestContainsAndExcludes(t *testing.T) {
+	validate := New()
+
+	type ImpossibleStringTest struct {
+		Foo string `validate:"fieldcontains=Bar"`
+		Bar string `validate:"fieldexcludes=Foo"`
+	}
+
+	impossibleStringTest := &ImpossibleStringTest{
+		Foo: "foo",
+		Bar: "bar",
+	}
+
+	errs := validate.Struct(impossibleStringTest)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "ImpossibleStringTest.Foo", "ImpossibleStringTest.Foo", "Foo", "Foo", "fieldcontains")
+
+	impossibleStringTest = &ImpossibleStringTest{
+		Foo: "bar",
+		Bar: "foo",
+	}
+
+	errs = validate.Struct(impossibleStringTest)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "ImpossibleStringTest.Foo", "ImpossibleStringTest.Foo", "Foo", "Foo", "fieldcontains")
+}
+
 func TestLteField(t *testing.T) {
 
 	validate := New()
@@ -5746,6 +6015,83 @@ func TestIsLte(t *testing.T) {
 
 	errs = validate.Struct(s)
 	NotEqual(t, errs, nil)
+}
+
+func TestUrnRFC2141(t *testing.T) {
+
+	var tests = []struct {
+		param    string
+		expected bool
+	}{
+		{"urn:a:b", true},
+		{"urn:a::", true},
+		{"urn:a:-", true},
+		{"URN:simple:simple", true},
+		{"urn:urna:simple", true},
+		{"urn:burnout:nss", true},
+		{"urn:burn:nss", true},
+		{"urn:urnurnurn:x", true},
+		{"urn:abcdefghilmnopqrstuvzabcdefghilm:x", true},
+		{"URN:123:x", true},
+		{"URN:abcd-:x", true},
+		{"URN:abcd-abcd:x", true},
+		{"urn:urnx:urn", true},
+		{"urn:ciao:a:b:c", true},
+		{"urn:aaa:x:y:", true},
+		{"urn:ciao:-", true},
+		{"urn:colon:::::nss", true},
+		{"urn:ciao:@!=%2C(xyz)+a,b.*@g=$_'", true},
+		{"URN:hexes:%25", true},
+		{"URN:x:abc%1Dz%2F%3az", true},
+		{"URN:foo:a123,456", true},
+		{"urn:foo:a123,456", true},
+		{"urn:FOO:a123,456", true},
+		{"urn:foo:A123,456", true},
+		{"urn:foo:a123%2C456", true},
+		{"URN:FOO:a123%2c456", true},
+		{"URN:FOO:ABC%FFabc123%2c456", true},
+		{"URN:FOO:ABC%FFabc123%2C456%9A", true},
+		{"urn:ietf:params:scim:schemas:core:2.0:User", true},
+		{"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:meta.lastModified", true},
+		{"URN:-xxx:x", false},
+		{"urn::colon:nss", false},
+		{"urn:abcdefghilmnopqrstuvzabcdefghilmn:specificstring", false},
+		{"URN:a!?:x", false},
+		{"URN:#,:x", false},
+		{"urn:urn:NSS", false},
+		{"urn:URN:NSS", false},
+		{"urn:white space:NSS", false},
+		{"urn:concat:no spaces", false},
+		{"urn:a:%", false},
+		{"urn:", false},
+	}
+
+	tag := "urn_rfc2141"
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, tag)
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != tag {
+					t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+
+	i := 1
+	PanicMatches(t, func() { validate.Var(i, tag) }, "Bad field type int")
 }
 
 func TestUrl(t *testing.T) {
@@ -8148,4 +8494,17 @@ func TestKeyOrs(t *testing.T) {
 
 	AssertDeepError(t, errs, "Test2.Test1[badtestkey]", "Test2.Test1[badtestkey]", "Test1[badtestkey]", "Test1[badtestkey]", "okkey", "eq=testkey|eq=testkeyok")
 	AssertDeepError(t, errs, "Test2.Test1[badtestkey]", "Test2.Test1[badtestkey]", "Test1[badtestkey]", "Test1[badtestkey]", "eq", "eq")
+}
+
+func TestStructLevelValidationsPointerPassing(t *testing.T) {
+	v1 := New()
+	v1.RegisterStructValidation(StructValidationTestStruct, &TestStruct{})
+
+	tst := &TestStruct{
+		String: "good value",
+	}
+
+	errs := v1.Struct(tst)
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "TestStruct.StringVal", "TestStruct.String", "StringVal", "String", "badvalueteststruct")
 }

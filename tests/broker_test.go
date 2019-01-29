@@ -90,7 +90,8 @@ func TestBroker(t *testing.T) {
 	resp, err = req.Put(baseUrl + "/service_instances/" + instID + "x" + "/service_bindings/" + bindID)
 	t.Run("Test Invalid Bind", CheckErrs(t, nil, err, Equals(404, resp.StatusCode(), "Unexpected status code")))
 
-	_, err = s3.New(strings.Replace(creds.C.S3Endpoint, "http://", "", 1), creds.C.S3AccessKey, creds.C.S3SecretKey, false)
+	noProtocolEndpoint := strings.Replace(strings.Replace(creds.C.S3Endpoint, "http://", "", 1), "https://", "", 1)
+	_, err = s3.New(noProtocolEndpoint, creds.C.S3AccessKey, creds.C.S3SecretKey, bc.UseHttps)
 	t.Run("Test S3 Creds", CheckErrs(t, nil, err))
 
 	sc := swift.Connection{

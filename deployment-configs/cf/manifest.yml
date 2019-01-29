@@ -16,3 +16,4 @@ applications:
     BUCKET_NAME: ((bucket_name))
     INSTANCE_LIMIT: ((instance_limit))
     INSTANCE_PREFIX: ((instance_prefix))
+    USE_HTTPS: ((use_https))

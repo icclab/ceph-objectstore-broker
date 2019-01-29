@@ -26,6 +26,7 @@ func main() {
 		logger.Error("Failed to load broker config", err)
 		return
 	}
+	logger.Info("Loaded broker config")
 
 	services := []brokerapi.Service{}
 	err = utils.LoadJsonFromFile("brokerConfig/service-config.json", &services)
@@ -33,19 +34,20 @@ func main() {
 		logger.Error("Failed to load service config", err)
 		return
 	}
+	logger.Info("Loaded service config")
 
 	//Connect to rgw
 	rados := &rg.Radosgw{}
 	if err := rados.Setup(bc.RadosEndpoint, bc.RadosAdminPath, bc.RadosAccessKey, bc.RadosSecretKey); err != nil {
-		logger.Error("Failed to connect to radosgw", err)
+		logger.Error("Failed to setup radosgw client", err)
 		return
 	}
 
 	//Create s3 client
 	s := &s3.S3{}
-	err = s.Connect(bc.RadosEndpoint, bc.RadosAccessKey, bc.RadosSecretKey, false)
+	err = s.Connect(bc.RadosEndpoint, bc.RadosAccessKey, bc.RadosSecretKey, bc.UseHttps)
 	if err != nil {
-		logger.Error("Failed to connect to S3", err)
+		logger.Error("Failed to setup S3 client", err)
 		return
 	}
 
@@ -58,17 +60,21 @@ func main() {
 		ShouldReturnAsync: false,
 	}
 
-	if b, _ := s.BucketExists(bc.BucketName); !b {
+	if b, bucketExistErr := s.BucketExists(bc.BucketName); !b && bucketExistErr == nil {
 		if err = s.CreateBucket(bc.BucketName); err != nil {
-			logger.Error("Failed to create base bucket for the broker", err)
+			logger.Error("Failed to create base bucket of the broker", err)
 			return
 		}
+	} else if bucketExistErr != nil {
+		logger.Error("Failed to check if base bucket of the broker exists", bucketExistErr)
+		return
 	}
+	logger.Info("Ensured broker bucket exists on Ceph")
 
 	//Start the broker
 	creds := brokerapi.BrokerCredentials{Username: bc.BrokerUsername, Password: bc.BrokerPassword}
 	handler := brokerapi.New(brok, logger, creds)
 	http.Handle("/", handler)
-	logger.Debug("Listen and serve on port: 8080")
+	logger.Info("Listen and serve on port: 8080")
 	_ = http.ListenAndServe(":8080", nil)
 }

@@ -14,3 +14,4 @@ bucket_name: "ceph-objectstore-broker"
 rados_admin: "admin"
 instance_limit: "2000"
 instance_prefix: "instances/"
+use_https: true
