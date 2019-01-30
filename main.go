@@ -75,6 +75,9 @@ func main() {
 	creds := brokerapi.BrokerCredentials{Username: bc.BrokerUsername, Password: bc.BrokerPassword}
 	handler := brokerapi.New(brok, logger, creds)
 	http.Handle("/", handler)
-	logger.Info("Listen and serve on port: 8080")
-	_ = http.ListenAndServe(":8080", nil)
+	logger.Info("Starting server on port: 8080")
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		logger.Error("Error in server", err)
+	}
 }
