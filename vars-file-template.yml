@@ -2,7 +2,7 @@
 rados_access_key: "SomeKey"
 rados_secret_key: "SomeVeryLongSecretKey"
 #7480 is the default port. Change if needed
-rados_endpoint: "http://my.rados-gateway.endpoint.com:7480"
+rados_endpoint: "https://my.rados-gateway.endpoint.com:7480"
 broker_username: "broker-username"
 broker_password: "MySecretBrokerPassword"
 
